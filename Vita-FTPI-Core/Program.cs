@@ -24,6 +24,7 @@ namespace Vita_FTPI_Core
         static SessionOptions sessionOptions;
         static string SendPath = "ux0:/data/sent.vpk";
         static string configDir = "ux0:/data/UnityLoader";
+        static string TempFileName = "tempFile";
 
         static void Main(string[] args)
         {
@@ -149,17 +150,17 @@ namespace Vita_FTPI_Core
                 if (session.FileExists(configDir + "/CONFIG_READY"))
                     session.RemoveFile(configDir + "/CONFIG_READY");
 
-                File.WriteAllText("dummy", "");
+                File.WriteAllText(TempFileName, "");
 
                 Console.WriteLine("Creating Config");
 
-                TransferOperationResult tresult = session.PutFiles("dummy", configDir + "/CONFIG_READY");
+                TransferOperationResult tresult = session.PutFiles(TempFileName, configDir + "/CONFIG_READY");
                 tresult.Check();
-                TransferOperationResult tresult2 = session.PutFiles("dummy", configDir + "/USB");
+                TransferOperationResult tresult2 = session.PutFiles(TempFileName, configDir + "/USB");
                 tresult2.Check();
-                TransferOperationResult tresult3 = session.PutFiles("dummy", configDir + "/" + StorageTypeToString(storageType));
+                TransferOperationResult tresult3 = session.PutFiles(TempFileName, configDir + "/" + StorageTypeToString(storageType));
                 tresult3.Check();
-                TransferOperationResult tresult4 = session.PutFiles("dummy", configDir + "/COPYING");
+                TransferOperationResult tresult4 = session.PutFiles(TempFileName, configDir + "/COPYING");
                 tresult4.Check();
                 Console.WriteLine("Config Sucess");
 
@@ -171,7 +172,7 @@ namespace Vita_FTPI_Core
                 }
                 File.Copy(VPKPath, driveLetter + "/data/sent.vpk", true);
                 session.RemoveFile(configDir + "/COPYING");
-                File.Delete("dummy");
+                File.Delete(TempFileName);
 
                 session.Close();
             }
@@ -212,11 +213,11 @@ namespace Vita_FTPI_Core
                 if (session.FileExists(configDir + "/CONFIG_READY"))
                     session.RemoveFile(configDir + "/CONFIG_READY");
 
-                File.WriteAllText("dummy", "");
+                File.WriteAllText(TempFileName, "");
 
                 Console.WriteLine("Creating Config");
 
-                TransferOperationResult tresult = session.PutFiles("dummy", configDir + "/CONFIG_READY");
+                TransferOperationResult tresult = session.PutFiles(TempFileName, configDir + "/CONFIG_READY");
                 tresult.Check();
                 foreach (FileOperationEventArgs result in tresult.Transfers)
                 {
@@ -233,7 +234,7 @@ namespace Vita_FTPI_Core
                 {
                     Console.WriteLine("Upload of {0} successful", (object)res.FileName);
                 }
-                File.Delete("dummy");
+                File.Delete(TempFileName);
                 session.Close();
             }
             LaunchUnityLoader();
