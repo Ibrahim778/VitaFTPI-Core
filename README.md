@@ -29,6 +29,7 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 1. Jordi at jllopisol@gmail.com for making the original program
 1. __*HUGE*__ thanks to Sillica, TheFlow, DevNoName120, Rinnegatamante, sarcastic cat, s1ngyy and anyone else who helped for answering all of my questions.
 1. WinSCP
+1. TheOfficialFlow for the USB suppourt I stole the code for it from there.
 1. Sillica for UnityTools
 1. TheOfficialFlow for making our vita's hackable on newer firmwares
 1. Team Molecule for Henkaku
@@ -46,7 +47,7 @@ Ans: You should only care about this if you are using USB mode you can enable / 
 
 **2. Can I use USB mode with udcv-uvc plugins?**
 
-Ans: As of now no; but suppourt is coming soon.
+Ans: Yes! As mentioned before it uses vitashells code / plugin for usb mode and it works fine with udcd_uvc.
 
 # Notes:
 1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Version 2 of the app requires the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
