@@ -288,7 +288,8 @@ namespace Vita_FTPI_Core
                 Protocol = Protocol.Ftp,
                 HostName = VitaIP,
                 PortNumber = port,
- 
+                UserName = "Anonymous",
+                Password = ""
             };
         }
 
