@@ -1,12 +1,49 @@
 ﻿using UnityEditor;
 using System.IO;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class VitaFTPOptions : EditorWindow 
 {
     public static bool UploadOnBuildEnd = false;
     public static string SavePath;
     private static UploadData uploadData;
+    private static List<char> violatedLetters = new List<char>()
+    {
+        '\'',
+        ']',
+        '[',
+        '{',
+        '}',
+        ':',
+        '-',
+        '+',
+        '=',
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '7',
+        '8',
+        '9',
+        '0',
+        '`',
+        '~',
+        '+',
+        '_',
+        '/',
+        '\\',
+        '|',
+        ':',
+        ';',
+        '"',
+        ',',
+        '.',
+        '<',
+        '>'
+    };
 
     [MenuItem("VitaFTPI/Options")]
     public static void ShowWindow()
@@ -44,6 +81,18 @@ public class VitaFTPOptions : EditorWindow
         {
             GUILayout.Label("Drive Letter: ", EditorStyles.largeLabel);
             uploadData.DriveLetter = EditorGUILayout.TextField(uploadData.DriveLetter).Split(' ')[0];
+
+            char Letter = getFirstLetter(uploadData.DriveLetter);
+
+            if(violatedLetters.Contains(Letter))
+            {
+                Debug.Log("Invalid letter given changing to default");
+                uploadData.DriveLetter = "D:";
+            }
+            else
+            {
+                uploadData.DriveLetter = Letter.ToString() + ":";
+            }
             
             GUILayout.Label("Storage Type: ", EditorStyles.largeLabel);
             uploadData.storageType = GUILayout.TextField(uploadData.storageType,EditorStyles.textField);
@@ -80,6 +129,11 @@ public class VitaFTPOptions : EditorWindow
         }
 
         return WordCount;
+    }
+
+    char getFirstLetter(string str)
+    {
+        return str[0];
     }
 }
 
