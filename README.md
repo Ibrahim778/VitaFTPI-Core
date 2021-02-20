@@ -15,7 +15,7 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 # How to use: 
 1. Download and extract the Tools.zip folder from the releases tab.
 1. Copy the Editor folder to your assets folder.
-1. Change the values in the script in the Editor folder to match your vita's.
+1. Save your enter your vita IP and other settings in the menu item VitaFTPI/Options.
 1. Copy the Uploader folder to the root of your project directory (So thats the parent directory of the Assets folder).
 1. Make sure your vita has vitacompanion installed. It's a plugin by devnoname120.
 1. Install the vita app for this tool from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
