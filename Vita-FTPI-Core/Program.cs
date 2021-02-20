@@ -150,6 +150,9 @@ namespace Vita_FTPI_Core
                 if (session.FileExists(configDir + "/CONFIG_READY"))
                     session.RemoveFile(configDir + "/CONFIG_READY");
 
+                if (session.FileExists(configDir + "/RUNCOMPLETE"))
+                    session.RemoveFile(configDir + "/RUNCOMPLETE");
+
                 File.WriteAllText(TempFileName, "");
 
                 Console.WriteLine("Creating Config");
