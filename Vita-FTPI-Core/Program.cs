@@ -21,6 +21,7 @@ namespace Vita_FTPI_Core
         static string VitaIP = "";
         static string VPKPath = "";
         static int port = 1337;
+        static string UploadFolder = "";
         static SessionOptions sessionOptions;
         static string SendPath = "ux0:/data/sent.vpk";
         static string configDir = "ux0:/data/UnityLoader";
@@ -28,9 +29,6 @@ namespace Vita_FTPI_Core
 
         static void Main(string[] args)
         {
-            if (Directory.Exists("Uploader"))
-                Directory.SetCurrentDirectory("Uploader");
-
             if (args.Length == 0)
             {
                 Console.WriteLine("No input specified Aboring!");
@@ -69,7 +67,25 @@ namespace Vita_FTPI_Core
                         return;
                     }
                 }
+                if(args[x] == "--upload-dir")
+                {
+                    if(Directory.Exists(args[x + 1]))
+                    {
+                        UploadFolder = args[x + 1];
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error uploader folder not found exiting....");
+                        Console.WriteLine(UploadFolder);
+                        Thread.Sleep(5000);
+                        return;
+                    }
+                }
             }
+
+            if (Directory.Exists("Uploader") && UploadFolder == "")
+                Directory.SetCurrentDirectory("Uploader");
+            else Directory.SetCurrentDirectory(UploadFolder);
 
             if (VitaIP == "" || VPKPath == "")
             {
@@ -260,9 +276,13 @@ namespace Vita_FTPI_Core
                         using (StreamReader sr = new StreamReader(ns))
                         {
                             Console.Write(sr.ReadToEnd());
+                            sr.Close();
                         }
+                        sw.Close();
                     }
+                    ns.Close();
                 }
+                client.Close();
             }
         }
 
