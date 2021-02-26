@@ -40,6 +40,10 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 1. Everyone who contributed to VitaSDK. 
 1. Anyone else who helped out on the discord servers.
 
+# Updating
+
+Updating is simple REPLACE not merge both the uploader and editor folder.
+
 # FAQ:
 **1. What do I put as the drive letter?**
 
