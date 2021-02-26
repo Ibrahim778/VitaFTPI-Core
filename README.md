@@ -51,7 +51,7 @@ Ans: You should only care about this if you are using USB mode you can enable / 
 
 **2. Can I use USB mode with udcv-uvc plugins?**
 
-Ans: Yes! As mentioned before it uses vitashells code / plugin for usb mode and it works fine with udcd_uvc.
+Ans: Yes! As mentioned before it uses vitashells code / plugin for usb mode and it works fine with udcd_uvc. HOWEVER after transferring via usb recording will no longer work until you reboot. (Not my fault just how it is).
 
 # Notes:
 1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Version 2 of the app requires the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
