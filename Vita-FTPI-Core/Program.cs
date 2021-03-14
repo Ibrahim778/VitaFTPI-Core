@@ -24,7 +24,7 @@ namespace Vita_FTPI_Core
         static int port = 1337;
         static string UploadFolder = "";
         static SessionOptions sessionOptions;
-        static string ExtractPath = "Extracted/";
+        static string ExtractPath = "Extracted";
         static private string pkgTempFolder = "/temp/pkg";
         static string SendPath = "ux0:/data/sent.vpk";
         static string configDir = "ux0:/data/UnityLoader";
@@ -195,7 +195,9 @@ namespace Vita_FTPI_Core
                 else
                 {
                     Console.WriteLine("Extracting...");
-                    Extract(VPKPath, ExtractPath);
+                    if (Directory.Exists(ExtractPath))
+                        Directory.Delete(ExtractPath, true);
+                    ZipFile.ExtractToDirectory(VPKPath, ExtractPath);
                     Console.WriteLine("Copying game files...");
                     LaunchUnityLoader();
                     while (!Directory.Exists(driveLetter + "/temp"))
@@ -203,7 +205,7 @@ namespace Vita_FTPI_Core
                         Thread.Sleep(100);
                     }
                     if (Directory.Exists(driveLetter + pkgTempFolder))
-                        Directory.Delete(driveLetter + pkgTempFolder);
+                        Directory.Delete(driveLetter + pkgTempFolder, true);
 
                     Directory.CreateDirectory(driveLetter + pkgTempFolder);
 
@@ -266,13 +268,13 @@ namespace Vita_FTPI_Core
                 if(Extracted)
                 {
                     if (Directory.Exists(ExtractPath))
-                        Directory.Delete(ExtractPath);
+                        Directory.Delete(ExtractPath, true);
                     Directory.CreateDirectory(ExtractPath);
                     Console.WriteLine("Extracting VPK...");
-                    ZipFile.ExtractToDirectory(VPKPath, "Extracted");
+                    ZipFile.ExtractToDirectory(VPKPath, ExtractPath);
                     Console.WriteLine("Uploading VPK...");
 
-                    TransferOperationResult result = session.PutFiles("Extracted", "ux0:" + pkgTempFolder, true);
+                    TransferOperationResult result = session.PutFiles(ExtractPath, "ux0:" + pkgTempFolder, true);
                     result.Check();
                     foreach (FileOperationEventArgs res in result.Transfers)
                     {
@@ -285,13 +287,6 @@ namespace Vita_FTPI_Core
             LaunchUnityLoader();
         }
 
-        static void Extract(string sourceFile, string destDir)
-        {
-            if(Directory.Exists(sourceFile))
-            {
-                ZipFile.ExtractToDirectory(sourceFile, destDir);
-            }    
-        }
         static void LaunchUnityLoader()
         {
             Console.WriteLine("Launching Unity Loader on Vita");
