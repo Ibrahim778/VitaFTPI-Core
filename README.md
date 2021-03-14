@@ -15,8 +15,8 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 # How to use: 
 1. Download and extract the Tools.zip folder from the releases tab.
 1. Copy the Editor folder to your assets folder.
-1. Enter your vita IP and other settings in the menu item VitaFTPI/Options.
-1. Copy the Uploader folder to the root of your project directory (So thats the parent directory of the Assets folder).
+1. Copy the Uploader folder to any folder in your pc (try documents).
+1. Enter your vita IP and other settings in the menu item VitaFTPI/Options and if you haven't placed the uploader folder in your project directory enable custom uploader path and browse to your uploader folder.
 1. Make sure your vita has vitacompanion installed. It's a plugin by devnoname120.
 1. Install the vita app for this tool from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
 1. Try to build like normal and sit back and relax.
@@ -40,6 +40,10 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 1. Everyone who contributed to VitaSDK. 
 1. Anyone else who helped out on the discord servers.
 
+# Updating
+
+Updating is simple REPLACE not merge both the uploader and editor folder.
+
 # FAQ:
 **1. What do I put as the drive letter?**
 
@@ -47,7 +51,7 @@ Ans: You should only care about this if you are using USB mode you can enable / 
 
 **2. Can I use USB mode with udcv-uvc plugins?**
 
-Ans: Yes! As mentioned before it uses vitashells code / plugin for usb mode and it works fine with udcd_uvc.
+Ans: Yes! As mentioned before it uses vitashells code / plugin for usb mode and it works fine with udcd_uvc. HOWEVER after transferring via usb recording will no longer work until you reboot. (Not my fault just how it is).
 
 # Notes:
 1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Version 2 of the app requires the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
