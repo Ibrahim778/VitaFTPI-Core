@@ -1,12 +1,14 @@
-﻿using UnityEditor;
+using UnityEditor;
 using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Threading;
 
 public class VitaFTPOptions : EditorWindow 
 {
     public static bool UploadOnBuildEnd = false;
     public static string SavePath;
+    public static Vector2 scrollView;
     private static UploadData uploadData;
     private static List<char> violatedLetters = new List<char>()
     {
@@ -68,9 +70,15 @@ public class VitaFTPOptions : EditorWindow
 
     void OnGUI()
     {
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.BeginHorizontal();
+        scrollView = EditorGUILayout.BeginScrollView(scrollView,false,false);
         if(uploadData == null)
             GetUploadData();
         uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end: ", uploadData.startOnBuildEnd);
+
+        uploadData.KeepFolderAfterBuild = EditorGUILayout.Toggle("Keep build folder", uploadData.KeepFolderAfterBuild);
+        uploadData.ExtractOnPC = EditorGUILayout.Toggle("Extract VPK on PC", uploadData.ExtractOnPC);
 
         GUILayout.Label("IP Adress: ", EditorStyles.largeLabel);
         uploadData.IP = EditorGUILayout.TextField(uploadData.IP,EditorStyles.numberField).Split(' ')[0];
@@ -82,22 +90,41 @@ public class VitaFTPOptions : EditorWindow
             GUILayout.Label("Drive Letter: ", EditorStyles.largeLabel);
             uploadData.DriveLetter = EditorGUILayout.TextField(uploadData.DriveLetter).Split(' ')[0];
 
-            char Letter = getFirstLetter(uploadData.DriveLetter);
-
-            if(violatedLetters.Contains(Letter))
+            if(violatedLetters.Contains(uploadData.DriveLetter[0]))
             {
                 Debug.Log("Invalid letter given changing to default");
                 uploadData.DriveLetter = "D:";
             }
             else
             {
-                uploadData.DriveLetter = Letter.ToString() + ":";
+                uploadData.DriveLetter = uploadData.DriveLetter[0].ToString() + ":";
             }
             
             GUILayout.Label("Storage Type: ", EditorStyles.largeLabel);
             uploadData.storageType = GUILayout.TextField(uploadData.storageType,EditorStyles.textField);
-            if(GetWordLength(uploadData.storageType) != 1)
-                uploadData.storageType = uploadData.storageType.Split(' ')[0];
+            uploadData.storageType = uploadData.storageType.Split(' ')[0];
+            
+            if(uploadData.storageType.ToLower().Equals("official"))
+            {
+                uploadData.storageType = "OFFICIAL";
+            }
+            else if(uploadData.storageType.ToLower().Equals("sd2vita"))
+            {
+                uploadData.storageType = "sd2vita";
+            }
+        }
+
+        uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder: ", uploadData.CustomUploaderFolder);
+
+        if(uploadData.CustomUploaderFolder)
+        {
+            if(GUILayout.Button("Browse"))
+            {
+                ThreadStart start = new ThreadStart(ShowDialog);
+                Thread thread = new Thread(start);
+                thread.Start();
+            }
+            EditorGUILayout.Space();
         }
 
         if(GUILayout.Button("Save Configuration"))
@@ -108,32 +135,21 @@ public class VitaFTPOptions : EditorWindow
             UploadBuild.BuildVPKMenu();
         if(GUILayout.Button("Upload VPK"))
             UploadBuild.UploadVPK();
+        
+        EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
     }
 
-    int GetWordLength(string words)
+    void ShowDialog()
     {
-        int WordCount = 0;
-        int index = 0;
-        while(index < words.Length && char.IsWhiteSpace(words[index]))
-            index++;
-
-        while(index < words.Length)
+        System.Windows.Forms.FolderBrowserDialog browserDialog = new System.Windows.Forms.FolderBrowserDialog();
+        System.Windows.Forms.DialogResult dialogResult = browserDialog.ShowDialog();
+        if(dialogResult == System.Windows.Forms.DialogResult.OK)
         {
-            while(index < words.Length && !char.IsWhiteSpace(words[index]))
-                index++;
-            
-            WordCount++;
-
-            while(index < words.Length && char.IsWhiteSpace(words[index]))
-                index++;
+            uploadData.UploaderFolder = browserDialog.SelectedPath;
+            UnityEngine.Debug.Log("Set Path to : " + uploadData.UploaderFolder);
         }
-
-        return WordCount;
-    }
-
-    char getFirstLetter(string str)
-    {
-        return str[0];
     }
 }
 

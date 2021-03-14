@@ -31,6 +31,13 @@ public class UploadBuild
 		UploadVPK();
 	}
 
+	public static string GetProjectName()
+ 	{
+     string[] s = Application.dataPath.Split('/');
+     string projectName = s[s.Length - 2];
+     return projectName;
+ 	}
+
     static int PreSetup()
     {
 		if(buildDir == null)
@@ -46,13 +53,17 @@ public class UploadBuild
 		}
 
 		if(UploaderPath == null)
-        	UploaderPath = System.Text.RegularExpressions.Regex.Replace(Application.dataPath,"Assets","Uploader");
+        	if(!data.CustomUploaderFolder) UploaderPath = System.Text.RegularExpressions.Regex.Replace(Application.dataPath,"Assets","Uploader");
+			else UploaderPath = data.UploaderFolder;
 
-        if(!Directory.Exists(UploaderPath))
-        {
+		if(Directory.Exists("\"" + UploaderPath + "\"")){}
+        if(Directory.Exists(UploaderPath)){}
+		else
+		{
             UnityEngine.Debug.Log("Uploader folder not found exiting!");
+			UnityEngine.Debug.Log(UploaderPath);
             return -1;
-        }
+		}
 		return 0;
     }
 
@@ -63,13 +74,14 @@ public class UploadBuild
 		if(PreSetup() < 0)
 			return;
 
-		if(!File.Exists(UploaderPath + "/" + data.File_Name + ".vpk"))
+		if(!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk"))
 		{
 			UnityEngine.Debug.Log("No VPK found! Please build it first");
 			return;
 		}
 
-		string args = "--vpk \"" + UploaderPath + "/" + data.File_Name + ".vpk\" --ip " + data.IP + " --usb " + boolToString(data.UseUSB) + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType;
+		string args = "--vpk \"" + UploaderPath + "/" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " + boolToString(data.UseUSB) + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" + data.UploaderFolder + "\" --extracted " + boolToString(data.ExtractOnPC);
+		
 		ProcessStartInfo VitaFTPIStartInfo = new ProcessStartInfo();
 		VitaFTPIStartInfo.Arguments = args;
 		if(File.Exists(UploaderPath + "/Vita-FTPI-Core.exe"))
@@ -99,7 +111,17 @@ public class UploadBuild
 		if(!Directory.Exists(File.ReadAllText(LastBuildDirSavePath)))
 			UnityEngine.Debug.Log("No build directory found!");
 		
-		string args = "-i \"" + buildDir + "\" -o \"" + UploaderPath + "/" + data.File_Name + "\"" + " -f -u -r -p -d";
+		string args;
+
+		if (!data.KeepFolderAfterBuild)
+		{
+			args = "-i \"" + buildDir + "\" -o \"" + UploaderPath + "/" + GetProjectName() + "\"" + " -f -u -r -p -d";
+		}
+		else
+		{
+			args = "-i \"" + buildDir + "\" -o \"" + UploaderPath + "/" + GetProjectName() + "\"" + " -f -u -r -p";
+		}
+
 		ProcessStartInfo processStartInfo = new ProcessStartInfo();
 		processStartInfo.FileName = UploaderPath + "/UnityTools.exe";
 		processStartInfo.Arguments = args;

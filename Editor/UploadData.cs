@@ -18,4 +18,12 @@
     public string storageType = "OFFICIAL";
 
     public bool startOnBuildEnd = false;
+
+    public bool CustomUploaderFolder;
+
+    public string UploaderFolder;
+
+    public bool KeepFolderAfterBuild;
+
+    public bool ExtractOnPC = true;
 }

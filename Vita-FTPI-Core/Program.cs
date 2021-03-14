@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.IO;
 using WinSCP;
+using System.IO.Compression;
 using System.Threading;
 
 enum StorageType
@@ -23,9 +24,13 @@ namespace Vita_FTPI_Core
         static int port = 1337;
         static string UploadFolder = "";
         static SessionOptions sessionOptions;
+        static string ExtractPath = "Extracted/";
+        static private string pkgTempFolder = "/temp/pkg";
         static string SendPath = "ux0:/data/sent.vpk";
         static string configDir = "ux0:/data/UnityLoader";
         static string TempFileName = "tempFile";
+        static bool Extracted = false;
+        static string[] configFiles = { "/EXTRACTED", "/CONFIG_READY", "/USB", "/sd2vita", "/OFFICIAL", "/RUNCOMPLETE", "/COPYING", "/INSTALL" };
 
         static void Main(string[] args)
         {
@@ -57,6 +62,10 @@ namespace Vita_FTPI_Core
                 if (args[x] == "--drive-letter")
                 {
                     driveLetter = args[x + 1];
+                }
+                if(args[x] == "--extracted")
+                {
+                    Extracted = (args[x + 1] == "true");
                 }
                 if (args[x] == "--storage-type")
                 {
@@ -94,7 +103,6 @@ namespace Vita_FTPI_Core
                 return;
             }
 
-
             if (!File.Exists(VPKPath))
             {
                 //Checking if the input file specified exists
@@ -103,6 +111,7 @@ namespace Vita_FTPI_Core
                 Thread.Sleep(5000);
                 return;
             }
+
 
             ConfigureOptions();
             if (!useUSB) UploadInstall();
@@ -148,26 +157,8 @@ namespace Vita_FTPI_Core
 
                 Console.WriteLine("Deleting Old Config Files...");
 
-                if (session.FileExists(configDir + "/USB"))
-                    session.RemoveFile(configDir + "/USB");
-
-                if (session.FileExists(configDir + "/COPYING"))
-                    session.RemoveFile(configDir + "/COPYING");
-
-                if (session.FileExists(configDir + "/EXTRACTED"))
-                    session.RemoveFile(configDir + "/EXTRACTED");
-
-                if (session.FileExists(configDir + "/sd2vita"))
-                    session.RemoveFile(configDir + "/sd2vita");
-
-                if (session.FileExists(configDir + "/OFFICIAL"))
-                    session.RemoveFile(configDir + "/OFFICIAL");
-
-                if (session.FileExists(configDir + "/CONFIG_READY"))
-                    session.RemoveFile(configDir + "/CONFIG_READY");
-
-                if (session.FileExists(configDir + "/RUNCOMPLETE"))
-                    session.RemoveFile(configDir + "/RUNCOMPLETE");
+                foreach (string file in configFiles)
+                    if (session.FileExists(configDir + file)) session.RemoveFile(configDir + file);
 
                 File.WriteAllText(TempFileName, "");
 
@@ -181,16 +172,44 @@ namespace Vita_FTPI_Core
                 tresult3.Check();
                 TransferOperationResult tresult4 = session.PutFiles(TempFileName, configDir + "/COPYING");
                 tresult4.Check();
-                Console.WriteLine("Config Sucess");
-
-                Console.WriteLine("Copying VPK");
-                LaunchUnityLoader();
-                while (!Directory.Exists(driveLetter + "/data"))
+                if (Extracted)
                 {
-                    Thread.Sleep(100);
+                    TransferOperationResult tresult5 = session.PutFiles(TempFileName, configDir + "/EXTRACTED");
+                    tresult5.Check();
                 }
-                File.Copy(VPKPath, driveLetter + "/data/sent.vpk", true);
-                session.RemoveFile(configDir + "/COPYING");
+                TransferOperationResult tresult6 = session.PutFiles(TempFileName, configDir + "/INSTALL");
+                tresult6.Check();
+                Console.WriteLine("Config Sucess");
+                
+                if (!Extracted)
+                {
+                    Console.WriteLine("Copying VPK");
+                    LaunchUnityLoader();
+                    while (!Directory.Exists(driveLetter + "/data"))
+                    {
+                        Thread.Sleep(100);
+                    }
+                    File.Copy(VPKPath, driveLetter + "/data/sent.vpk", true);
+                    session.RemoveFile(configDir + "/COPYING");
+                }
+                else
+                {
+                    Console.WriteLine("Extracting...");
+                    Extract(VPKPath, ExtractPath);
+                    Console.WriteLine("Copying game files...");
+                    LaunchUnityLoader();
+                    while (!Directory.Exists(driveLetter + "/temp"))
+                    {
+                        Thread.Sleep(100);
+                    }
+                    if (Directory.Exists(driveLetter + pkgTempFolder))
+                        Directory.Delete(driveLetter + pkgTempFolder);
+
+                    Directory.CreateDirectory(driveLetter + pkgTempFolder);
+
+                    CopyAll(new DirectoryInfo(ExtractPath), new DirectoryInfo(driveLetter + pkgTempFolder));
+                    session.RemoveFile(configDir + "/COPYING");
+                }
                 File.Delete(TempFileName);
 
                 session.Close();
@@ -214,47 +233,51 @@ namespace Vita_FTPI_Core
 
                 Console.WriteLine("Deleting Old Config Files...");
 
-                if (session.FileExists(configDir + "/USB"))
-                    session.RemoveFile(configDir + "/USB");
-
-                if (session.FileExists(configDir + "/COPYING"))
-                    session.RemoveFile(configDir + "/COPYING");
-
-                if (session.FileExists(configDir + "/EXTRACTED"))
-                    session.RemoveFile(configDir + "/EXTRACTED");
-
-                if (session.FileExists(configDir + "/sd2vita"))
-                    session.RemoveFile(configDir + "/sd2vita");
-
-                if (session.FileExists(configDir + "/OFFICIAL"))
-                    session.RemoveFile(configDir + "/OFFICIAL");
-
-                if (session.FileExists(configDir + "/CONFIG_READY"))
-                    session.RemoveFile(configDir + "/CONFIG_READY");
-
-                if (session.FileExists(configDir + "/RUNCOMPLETE"))
-                    session.RemoveFile(configDir + "/RUNCOMPLETE");
+                foreach (string file in configFiles)
+                    if (session.FileExists(configDir + file)) session.RemoveFile(configDir + file);
 
                 File.WriteAllText(TempFileName, "");
 
                 Console.WriteLine("Creating Config");
-
+                TransferOperationResult iresult = session.PutFiles(TempFileName, configDir + "/INSTALL");
                 TransferOperationResult tresult = session.PutFiles(TempFileName, configDir + "/CONFIG_READY");
                 tresult.Check();
                 foreach (FileOperationEventArgs result in tresult.Transfers)
                 {
                     Console.WriteLine("Upload of {0} successful", (object)result.FileName);
                 }
+                if(Extracted)
+                {
+                    TransferOperationResult tresult2 = session.PutFiles(TempFileName, configDir + "/EXTRACTED");
+                    tresult2.Check();
+                }
                 Console.WriteLine("Config Sucess");
 
-
-
-                Console.WriteLine("Uploading VPK");
-                TransferOperationResult toresult = session.PutFiles(VPKPath, SendPath);
-                toresult.Check();
-                foreach (FileOperationEventArgs res in toresult.Transfers)
+                if (!Extracted)
                 {
-                    Console.WriteLine("Upload of {0} successful", (object)res.FileName);
+                    Console.WriteLine("Uploading VPK");
+                    TransferOperationResult toresult = session.PutFiles(VPKPath, SendPath);
+                    toresult.Check();
+                    foreach (FileOperationEventArgs res in toresult.Transfers)
+                    {
+                        Console.WriteLine("Upload of {0} successful", (object)res.FileName);
+                    }
+                }
+                if(Extracted)
+                {
+                    if (Directory.Exists(ExtractPath))
+                        Directory.Delete(ExtractPath);
+                    Directory.CreateDirectory(ExtractPath);
+                    Console.WriteLine("Extracting VPK...");
+                    ZipFile.ExtractToDirectory(VPKPath, "Extracted");
+                    Console.WriteLine("Uploading VPK...");
+
+                    TransferOperationResult result = session.PutFiles("Extracted", "ux0:" + pkgTempFolder, true);
+                    result.Check();
+                    foreach (FileOperationEventArgs res in result.Transfers)
+                    {
+                        Console.WriteLine("Upload of {0} successful", (object)res.FileName);
+                    }
                 }
                 File.Delete(TempFileName);
                 session.Close();
@@ -262,6 +285,13 @@ namespace Vita_FTPI_Core
             LaunchUnityLoader();
         }
 
+        static void Extract(string sourceFile, string destDir)
+        {
+            if(Directory.Exists(sourceFile))
+            {
+                ZipFile.ExtractToDirectory(sourceFile, destDir);
+            }    
+        }
         static void LaunchUnityLoader()
         {
             Console.WriteLine("Launching Unity Loader on Vita");
