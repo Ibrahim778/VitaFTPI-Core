@@ -21,7 +21,7 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 1. Install the vita app for this tool from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
 1. Try to build like normal and sit back and relax.
 
-# Known issues:
+# Known Issues:
 ***Nothing to see here***
 
 # Credits: 
