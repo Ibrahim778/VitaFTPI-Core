@@ -26,4 +26,5 @@
     public bool KeepFolderAfterBuild;
 
     public bool ExtractOnPC = true;
+
 }

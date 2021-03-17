@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.Callbacks;
 using System.IO;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 [ExecuteInEditMode]
@@ -33,9 +34,9 @@ public class UploadBuild
 
 	public static string GetProjectName()
  	{
-     string[] s = Application.dataPath.Split('/');
-     string projectName = s[s.Length - 2];
-     return projectName;
+		 string[] s = Application.dataPath.Split('/');
+		 string projectName = s[s.Length - 2];
+		 return projectName;
  	}
 
     static int PreSetup()
@@ -67,6 +68,39 @@ public class UploadBuild
 		return 0;
     }
 
+	public static void ReplaceInstall()
+    {
+		if (!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk"))
+		{
+			UnityEngine.Debug.Log("No VPK found! Please build it first");
+			return;
+		}
+
+		UnityEngine.Debug.Log("Launching VitaFPTI");
+		if (PreSetup() < 0)
+			return;
+
+		if (!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk"))
+		{
+			UnityEngine.Debug.Log("No VPK found! Please build it first");
+			return;
+		}
+
+		string args = "--vpk \"" + UploaderPath + "/" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
+			boolToString(data.UseUSB) + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" + data.UploaderFolder + "\"" + " --titleid " + Regex.Matches(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])")[0];
+		args += " --replace-install";
+		ProcessStartInfo VitaFTPIStartInfo = new ProcessStartInfo();
+		VitaFTPIStartInfo.Arguments = args;
+		if (File.Exists(UploaderPath + "/Vita-FTPI-Core.exe"))
+			VitaFTPIStartInfo.FileName = UploaderPath + "/Vita-FTPI-Core.exe";
+		else
+			VitaFTPIStartInfo.FileName = UploaderPath + "/VitaFTPI.exe";
+		Process VitaFTPI = new Process();
+		VitaFTPI.StartInfo = VitaFTPIStartInfo;
+		VitaFTPI.Start();
+		UnityEngine.Debug.Log("Done!");
+	}
+
 	[MenuItem("VitaFTPI/Upload VPK")]
 	public static void UploadVPK()
 	{
@@ -80,8 +114,13 @@ public class UploadBuild
 			return;
 		}
 
-		string args = "--vpk \"" + UploaderPath + "/" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " + boolToString(data.UseUSB) + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" + data.UploaderFolder + "\" --extracted " + boolToString(data.ExtractOnPC);
-		
+		string args = "--vpk \"" + UploaderPath + "/" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
+	boolToString(data.UseUSB) + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" + data.UploaderFolder + "\"" + " --titleid " + Regex.Matches(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])")[0];
+
+		if (data.ExtractOnPC)
+			args += " --extract";
+		else args += "--complete-vita-install";
+
 		ProcessStartInfo VitaFTPIStartInfo = new ProcessStartInfo();
 		VitaFTPIStartInfo.Arguments = args;
 		if(File.Exists(UploaderPath + "/Vita-FTPI-Core.exe"))
@@ -111,16 +150,11 @@ public class UploadBuild
 		if(!Directory.Exists(File.ReadAllText(LastBuildDirSavePath)))
 			UnityEngine.Debug.Log("No build directory found!");
 		
-		string args;
+		string args = "-i \"" + buildDir + "\" -o \"" + UploaderPath + "/" + GetProjectName() + "\"" + " -f -u -r -p";
 
 		if (!data.KeepFolderAfterBuild)
-		{
-			args = "-i \"" + buildDir + "\" -o \"" + UploaderPath + "/" + GetProjectName() + "\"" + " -f -u -r -p -d";
-		}
-		else
-		{
-			args = "-i \"" + buildDir + "\" -o \"" + UploaderPath + "/" + GetProjectName() + "\"" + " -f -u -r -p";
-		}
+			args += " -d";
+		
 
 		ProcessStartInfo processStartInfo = new ProcessStartInfo();
 		processStartInfo.FileName = UploaderPath + "/UnityTools.exe";

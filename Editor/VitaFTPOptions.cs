@@ -133,8 +133,10 @@ public class VitaFTPOptions : EditorWindow
 
         if(GUILayout.Button("Build VPK"))
             UploadBuild.BuildVPKMenu();
-        if(GUILayout.Button("Upload VPK"))
+        if(GUILayout.Button("Complete Install"))
             UploadBuild.UploadVPK();
+        if (GUILayout.Button("Replace Install"))
+            UploadBuild.ReplaceInstall();
         
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndHorizontal();
