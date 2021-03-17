@@ -76,15 +76,16 @@ public class VitaFTPOptions : EditorWindow
         if(uploadData == null)
             GetUploadData();
         uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end: ", uploadData.startOnBuildEnd);
-
+        if (uploadData.startOnBuildEnd)
+        {
+            uploadData.UseReplaceInstallOnEnd = EditorGUILayout.Toggle("Use replace install", uploadData.UseReplaceInstallOnEnd);
+        }
         uploadData.KeepFolderAfterBuild = EditorGUILayout.Toggle("Keep build folder", uploadData.KeepFolderAfterBuild);
         uploadData.ExtractOnPC = EditorGUILayout.Toggle("Extract VPK on PC", uploadData.ExtractOnPC);
 
         GUILayout.Label("IP Adress: ", EditorStyles.largeLabel);
         uploadData.IP = EditorGUILayout.TextField(uploadData.IP,EditorStyles.numberField).Split(' ')[0];
-
         uploadData.UseUSB = EditorGUILayout.Toggle("Use USB: ",uploadData.UseUSB);
-
         if(uploadData.UseUSB)
         {
             GUILayout.Label("Drive Letter: ", EditorStyles.largeLabel);
@@ -137,7 +138,9 @@ public class VitaFTPOptions : EditorWindow
             UploadBuild.UploadVPK();
         if (GUILayout.Button("Replace Install"))
             UploadBuild.ReplaceInstall();
-        
+
+
+
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.EndVertical();
@@ -150,7 +153,7 @@ public class VitaFTPOptions : EditorWindow
         if(dialogResult == System.Windows.Forms.DialogResult.OK)
         {
             uploadData.UploaderFolder = browserDialog.SelectedPath;
-            UnityEngine.Debug.Log("Set Path to : " + uploadData.UploaderFolder);
+            Debug.Log("Set Path to : " + uploadData.UploaderFolder);
         }
     }
 }

@@ -40,7 +40,7 @@ namespace Vita_FTPI_Core
     {
         static int exitTime = 1;
         static ProgressBar currentBar;
-
+        static bool preExtracted = false;
         static InstallMode installMode = InstallMode.PROMOTE_EXTRACT_VITA;
         static StorageType storageType;
         static FTPOptions ftpOptions;
@@ -150,6 +150,11 @@ namespace Vita_FTPI_Core
                 {
                     installMode = InstallMode.PROMOTE_EXTRACT_VITA;
                 }
+                if (args[x] == "--pre-extract")
+                {
+                    preExtracted = true;
+                    ExtractPath = args[x + 1];
+                }
             }
 
             if (Directory.Exists("Uploader") && UploadFolder == "")
@@ -194,7 +199,7 @@ namespace Vita_FTPI_Core
             if (transferOptions.useUSB) LoadUSB();
 
             if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA || installMode == InstallMode.EXTRACT_REPLACE)
-                ExtractVPK();
+                if(!preExtracted) ExtractVPK();
 
             if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA || installMode == InstallMode.PROMOTE_EXTRACT_VITA)
                 ftpCreateFile(configDir + "/INSTALL");
@@ -248,7 +253,7 @@ namespace Vita_FTPI_Core
 
         EXT_REP:
             if (transferOptions.useUSB)
-            {
+            {      
                 Directory.Delete(transferOptions.driveLetter + "/app/" + TitleID, true);
                 CopyAll(new DirectoryInfo(ExtractPath), new DirectoryInfo(transferOptions.driveLetter + "/app/" + TitleID));
                 ftpSession.RemoveFile(configDir + "/COPYING");
@@ -266,6 +271,7 @@ namespace Vita_FTPI_Core
         EXIT:
             Console.WriteLine("Closing connection...");
             ftpSession.Close();
+            File.Delete(TempFileName);
             Console.WriteLine($"Exiting in {0} seconds", exitTime);
             Thread.Sleep(exitTime * 1000);
             Environment.Exit(0);
