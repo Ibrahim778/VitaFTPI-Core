@@ -69,6 +69,7 @@ namespace Vita_FTPI_Core
             //Setting all the arguments
             for (int x = 0; x < args.Length; x += 2)
             {
+                Console.WriteLine("Argument no " + x + " is : " + args[x]);
                 if (args[x] == "--vpk")
                 {
                     VPKPath = args[x + 1];
@@ -144,7 +145,9 @@ namespace Vita_FTPI_Core
                 }
                 if (args[x] == "--extract")
                 {
+                    Console.WriteLine("Setting mode to extract!");
                     installMode = InstallMode.EXTRACT_PC_PROMOTE_VITA;
+                    x--;
                 }
                 if (args[x] == "--complete-vita-install")
                 {
@@ -152,6 +155,7 @@ namespace Vita_FTPI_Core
                 }
                 if (args[x] == "--pre-extract")
                 {
+                    Console.WriteLine("Set extract path to: " + args[x + 1]);
                     preExtracted = true;
                     ExtractPath = args[x + 1];
                 }
@@ -312,13 +316,13 @@ namespace Vita_FTPI_Core
                 return;
             }
             if (!File.Exists(TempFileName))
-                File.WriteAllText(TempFileName, "Just a temporary file!");
+                File.WriteAllText(TempFileName, "");
             currentBar = new ProgressBar();
             currentBar.Report(0);
             TransferOperationResult transferResult = ftpSession.PutFiles(TempFileName, remotePath);
             transferResult.Check();
             foreach (FileOperationEventArgs transfer in transferResult.Transfers)
-                Console.WriteLine("Transfer of " + transfer.FileName + " was successful!");
+                Console.WriteLine("Creation of file at location:  " + remotePath + " was successful!");
             currentBar.Dispose();
         }
 
