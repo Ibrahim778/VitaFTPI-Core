@@ -13,10 +13,14 @@ public class UploadBuild
 	public static string UploaderPath = null;
 	public static string LastBuildDirSavePath = Application.dataPath + "/LastBuildDir.txt";
 	public static string buildDir = null;
+	
 
 	[PostProcessBuildAttribute(1)]
 	public static void OnBuildEnd(BuildTarget target, string pathToBuiltProject)
 	{
+		if (!target.Equals(BuildTarget.PSP2))
+			return;
+
 		File.WriteAllText(LastBuildDirSavePath,pathToBuiltProject);
 		if(data == null)
 			data = JsonUtility.FromJson<UploadData>(File.ReadAllText(VitaFTPOptions.SavePath));
@@ -55,7 +59,7 @@ public class UploadBuild
 		}
 
 		if(UploaderPath == null)
-        	if(!data.CustomUploaderFolder) UploaderPath = System.Text.RegularExpressions.Regex.Replace(Application.dataPath,"Assets","Uploader");
+        	if(!data.CustomUploaderFolder) UploaderPath = Regex.Replace(Application.dataPath,"Assets","Uploader");
 			else UploaderPath = data.UploaderFolder;
 
 		if(Directory.Exists("\"" + UploaderPath + "\"")){}
@@ -75,23 +79,38 @@ public class UploadBuild
 			return;
 
 
-		if (!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk"))
+		if (!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk") && !data.ExtractOnPC)
 		{
 			UnityEngine.Debug.Log("No VPK found! Please build it first");
 			return;
 		}
 
+        if (data.ExtractOnPC)
+        {
+			DirectoryInfo buildDirInfo = new DirectoryInfo(buildDir);
+			foreach (FileInfo currentFile in buildDirInfo.GetFiles())
+			{
+				if (currentFile.Extension.Equals(".self"))
+				{
+					File.Move(currentFile.FullName, Regex.Replace(currentFile.FullName, currentFile.Name, "eboot.bin"));
+					break;
+				}
+			}
+		}
+
 		UnityEngine.Debug.Log("Launching VitaFPTI");
+
 
 		string args = "--vpk \"" + UploaderPath + "/" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
 			boolToString(data.UseUSB) + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" 
 			+ data.UploaderFolder + "\"" + " --titleid " + Regex.Matches(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])")[0];
-		args += " --replace-install";
 		if (data.ExtractOnPC)
 		{
-			args += " --pre-extract \"" + buildDir + "\"";
 			args += " --extract";
+			args += " --pre-extract \"" + buildDir + "\"";
 		}
+		args += " --replace-install";
+
 
 		ProcessStartInfo VitaFTPIStartInfo = new ProcessStartInfo();
 		VitaFTPIStartInfo.Arguments = args;
@@ -117,6 +136,18 @@ public class UploadBuild
 			UnityEngine.Debug.Log("No VPK found! Please build it first");
 			return;
 		}
+		if (data.ExtractOnPC)
+		{
+			DirectoryInfo buildDirInfo = new DirectoryInfo(buildDir);
+			foreach (FileInfo currentFile in buildDirInfo.GetFiles())
+			{
+				if (currentFile.Extension.Equals(".self"))
+				{
+					File.Move(currentFile.FullName, Regex.Replace(currentFile.FullName, currentFile.Name, "eboot.bin"));
+					break;
+				}
+			}
+		}
 
 		string args = "--vpk \"" + UploaderPath + "/" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
 	boolToString(data.UseUSB) + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" + data.UploaderFolder 
@@ -127,7 +158,7 @@ public class UploadBuild
 			args += " --pre-extract \"" + buildDir + "\"";
 			args += " --extract";
 		}
-		else args += "--complete-vita-install";
+		else args += " --complete-vita-install";
 
 		ProcessStartInfo VitaFTPIStartInfo = new ProcessStartInfo();
 		VitaFTPIStartInfo.Arguments = args;

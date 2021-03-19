@@ -91,7 +91,7 @@ public class VitaFTPOptions : EditorWindow
             GUILayout.Label("Drive Letter: ", EditorStyles.largeLabel);
             uploadData.DriveLetter = EditorGUILayout.TextField(uploadData.DriveLetter).Split(' ')[0];
 
-            if(violatedLetters.Contains(uploadData.DriveLetter[0]))
+            if(uploadData.DriveLetter.Length != 1 && violatedLetters.Contains(uploadData.DriveLetter[0]))
             {
                 Debug.Log("Invalid letter given changing to default");
                 uploadData.DriveLetter = "D:";
