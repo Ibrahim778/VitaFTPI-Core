@@ -69,7 +69,6 @@ namespace Vita_FTPI_Core
             //Setting all the arguments
             for (int x = 0; x < args.Length; x += 2)
             {
-                Console.WriteLine("Argument no " + x + " is : " + args[x]);
                 if (args[x] == "--vpk")
                 {
                     VPKPath = args[x + 1];
@@ -185,6 +184,8 @@ namespace Vita_FTPI_Core
                 ftpOptions.PORT = 1337;
             if (ftpOptions.CMD_PORT == 0)
                 ftpOptions.CMD_PORT = 1338;
+
+            closeAllApps();
             ConfigureOptions();
             Console.WriteLine("Connecting to vita...");
             ftpSession.FileTransferProgress += new FileTransferProgressEventHandler(ProgressChanged);
@@ -375,15 +376,28 @@ namespace Vita_FTPI_Core
             return StorageType.Unconfigured;
         }
 
-        static string StorageTypeToString(StorageType st)
+        static void closeAllApps()
         {
-            if (st == StorageType.OFFICIAL)
-                return "OFFICIAL";
-
-            if (st == StorageType.sd2vita)
-                return "sd2vita";
-
-            return "unconfigured";
+            Console.WriteLine("Closing all apps...");
+            using (TcpClient client = new TcpClient(ftpOptions.IP.ToString(), ftpOptions.CMD_PORT))
+            {
+                using (NetworkStream ns = client.GetStream())
+                {
+                    using (StreamWriter sw = new StreamWriter(ns))
+                    {
+                        sw.Write("destroy\n");
+                        sw.Flush();
+                        using (StreamReader sr = new StreamReader(ns))
+                        {
+                            Console.Write(sr.ReadToEnd());
+                            sr.Close();
+                        }
+                        sw.Close();
+                    }
+                    ns.Close();
+                }
+                client.Close();
+            }
         }
 
         static void launchApp(string titleID)
