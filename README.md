@@ -1,5 +1,5 @@
 # VitaFTPI-Core
-This is a tool to be used with Sillica's Unity Tools and unity for quickly installing unity games for the vita over FTP Based on .NET Core.
+This is a tool to be used with Sillica's Unity Tools and unity for quickly installing unity games for the vita over FTP or USB Based on .NET Core.
 
 # What is it?
 This is a tool to be used with Sillica's Unity Tools and unity for quickly installing unity games for the vita over FTP.
