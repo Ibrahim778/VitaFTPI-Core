@@ -54,6 +54,6 @@ Ans: You should only care about this if you are using USB mode you can enable / 
 Ans: Yes! UnityLoader will automatically unload and load udcd_uvc before and after the transfer. *IMPORTANT* For this to work the plugin needs to be in ur0:tai or ux0:tai and it needs to be named udcd_uvc.skprx so if you use any of the oled or lcd_off plugins just rename them to udcd_uvc.skprx and make sure to change it in your config.txt as well. For this to work you need UnityLoader V1.6 or later.
 
 # Notes:
-1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Version 2 of the app requires the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
+1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Versions 2 and above of the app requires the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
 
 1. A previous version of this app VitaFTPI worked only for some people so I have migrated it to .NET Core here.
