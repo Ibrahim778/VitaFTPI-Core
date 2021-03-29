@@ -171,7 +171,7 @@ namespace Vita_FTPI_Core
                 return;
             }
 
-            if (!File.Exists(VPKPath))
+            if (!File.Exists(VPKPath) && !preExtracted)
             {
                 //Checking if the input file specified exists
                 Console.WriteLine("No file found. Check your input path and make sure to include the file extension.");
