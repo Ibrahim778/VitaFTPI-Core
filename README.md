@@ -1,5 +1,5 @@
 # VitaFTPI-Core
-This is a tool to be used with Sillica's Unity Tools and unity for quickly installing unity games for the vita over FTP Based on .NET Core.
+This is a tool to be used with Sillica's Unity Tools and unity for quickly installing unity games for the vita over FTP or USB Based on .NET Core.
 
 # What is it?
 This is a tool to be used with Sillica's Unity Tools and unity for quickly installing unity games for the vita over FTP.
@@ -26,7 +26,7 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 
 # Credits: 
 1. Jordi at jllopisol@gmail.com for making the original program
-1. __*HUGE*__ thanks to Sillica, TheFlow, DevNoName120, Rinnegatamante, sarcastic cat, s1ngyy and anyone else who helped for answering all of my questions.
+1. __*HUGE*__ thanks to Silica, Princess of Sleeping, Sarcastic Cat, たまご, TheFlow, DevNoName120, Rinnegatamante, s1ngyy and anyone else who helped for answering all of my questions.
 1. WinSCP
 1. TheOfficialFlow for the USB suppourt I stole the code for it from there.
 1. Sillica for UnityTools
@@ -44,16 +44,19 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 
 Updating is simple REPLACE not merge both the uploader and editor folder.
 
+# Warnings:
+1. If uma0: is mounted usb mode will corrupt the data in it. uma0: is usally used for usb's in a pstv and for psvsd. So be careful! You have been warned.
+
 # FAQ:
 **1. What do I put as the drive letter?**
 
-Ans: You should only care about this if you are using USB mode you can enable / disable it by changing UseUSB to true. If you are using USB then you can go into vitashell connect your PSVITA to your pc via usb and note the drive letter you can set that as the letter, including the colon, and disconnect the vita now. Do remember that you vita needs to be connected to your pc via usb while building and only disconnect it after the install process has completed or else your vita WILL freeze.
+Ans: You should only care about this if you are using USB mode you can enable / disable it from the editor window. If you are using USB then you can go into vitashell connect your PSVITA to your pc via usb and note the drive letter you can set that as the letter, including the colon, and disconnect the vita now. Do remember that you vita needs to be connected to your pc via usb while building and only disconnect it after the install process has completed or else your vita WILL freeze.
 
 **2. Can I use USB mode with udcv-uvc plugins?**
 
-Ans: Yes! As mentioned before it uses vitashells code / plugin for usb mode and it works fine with udcd_uvc. HOWEVER after transferring via usb recording will no longer work until you reboot. (Not my fault just how it is).
+Ans: Yes! UnityLoader will automatically unload and load udcd_uvc before and after the transfer. *IMPORTANT* For this to work the plugin needs to be in ur0:tai or ux0:tai and it needs to be named udcd_uvc.skprx so if you use any of the oled or lcd_off plugins just rename them to udcd_uvc.skprx and make sure to change it in your config.txt as well. For this to work you need UnityLoader V1.6 or later.
 
 # Notes:
-1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Version 2 of the app requires the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
+1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Versions 2 and above of the app require the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
 
 1. A previous version of this app VitaFTPI worked only for some people so I have migrated it to .NET Core here.
