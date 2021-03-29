@@ -11,7 +11,7 @@ public class UploadBuild
 {
 	public static UploadData data = null;
 	public static string UploaderPath = null;
-	public static string LastBuildDirSavePath = Application.dataPath + "/LastBuildDir.txt";
+	public static string LastBuildDirSavePath = Application.dataPath + "/VitaFTPI/LastBuildDir.txt";
 	public static string buildDir = null;
 	
 
@@ -131,7 +131,7 @@ public class UploadBuild
 		if(PreSetup() < 0)
 			return;
 
-		if(!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk"))
+		if(!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk") && !data.ExtractOnPC)
 		{
 			UnityEngine.Debug.Log("No VPK found! Please build it first");
 			return;
@@ -194,7 +194,19 @@ public class UploadBuild
 			args += " -p";
 		if (!data.KeepFolderAfterBuild)
 			args += " -d";
-		
+		if(Directory.Exists(Application.dataPath + "/CustomPlugins"))
+        {
+			UnityEngine.Debug.Log("Adding custom plugins.....");
+			DirectoryInfo di = new DirectoryInfo(Application.dataPath + "/CustomPlugins");
+			foreach(FileInfo file in di.GetFiles())
+            {
+				if(file.Extension == ".suprx" || file.Extension == ".skprx")
+                {
+					UnityEngine.Debug.Log("Copying " + file.Name + " to: " + buildDir + "/Media/Plugins/" + file.Name);
+					file.CopyTo(buildDir + "/Media/Plugins/" + file.Name, true);
+				}
+			}
+        }
 
 		ProcessStartInfo processStartInfo = new ProcessStartInfo();
 		processStartInfo.FileName = UploaderPath + "/UnityTools.exe";

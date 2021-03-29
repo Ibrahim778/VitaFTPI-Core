@@ -55,8 +55,14 @@ public class VitaFTPOptions : EditorWindow
 
     void OnEnable()
     {
-        SavePath = Application.dataPath + "\\SaveConfig.txt";
+#if UNITY_PSP2
+        if (!Directory.Exists(Application.dataPath + "/VitaFTPI"))
+        {
+            Directory.CreateDirectory(Application.dataPath + "/VitaFTPI");
+        }
+        SavePath = Application.dataPath + "/VitaFTPI/SaveConfig.txt";
         GetUploadData();
+#endif
     }
 
     static void GetUploadData()
@@ -70,80 +76,185 @@ public class VitaFTPOptions : EditorWindow
 
     void OnGUI()
     {
-        EditorGUILayout.BeginVertical();
-        EditorGUILayout.BeginHorizontal();
-        scrollView = EditorGUILayout.BeginScrollView(scrollView,false,false);
-        if(uploadData == null)
-            GetUploadData();
-        uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end: ", uploadData.startOnBuildEnd);
-        if (uploadData.startOnBuildEnd)
+        GUILayoutOption width112 = GUILayout.Width(112);
+#if !UNITY_PSP2
+        EditorGUILayout.HelpBox("This is a PSVITA only tool, To use it set your build target to PSVITA!", MessageType.Warning);
+        return;
+#else
+        EditorGUILayout.HelpBox("Remember to save your configuration every time you make a change before doing anything", MessageType.Info);
+#endif
+
+        if(File.Exists(Application.dataPath + "/VitaFTPI/OLDLAYOUT"))
         {
-            uploadData.UseReplaceInstallOnEnd = EditorGUILayout.Toggle("Use replace install", uploadData.UseReplaceInstallOnEnd);
+            Debug.Log("using old layout!");
+            EditorGUILayout.BeginVertical();
+            EditorGUILayout.BeginHorizontal();
+            scrollView = EditorGUILayout.BeginScrollView(scrollView, false, false);
+            if (uploadData == null)
+                GetUploadData();
+            uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end: ", uploadData.startOnBuildEnd);
+            if (uploadData.startOnBuildEnd)
+            {
+                uploadData.UseReplaceInstallOnEnd = EditorGUILayout.Toggle("Use replace install", uploadData.UseReplaceInstallOnEnd);
+            }
+            uploadData.KeepFolderAfterBuild = EditorGUILayout.Toggle("Keep build folder", uploadData.KeepFolderAfterBuild);
+            uploadData.ExtractOnPC = EditorGUILayout.Toggle("Extract VPK on PC", uploadData.ExtractOnPC);
+
+            GUILayout.Label("IP Adress: ", EditorStyles.largeLabel);
+            uploadData.IP = EditorGUILayout.TextField(uploadData.IP, EditorStyles.numberField).Split(' ')[0];
+            uploadData.UseUSB = EditorGUILayout.Toggle("Use USB: ", uploadData.UseUSB);
+            if (uploadData.UseUSB)
+            {
+                GUILayout.Label("Drive Letter: ", EditorStyles.largeLabel);
+                uploadData.DriveLetter = EditorGUILayout.TextField(uploadData.DriveLetter).Split(' ')[0];
+
+                if (uploadData.DriveLetter.Length != 1 && violatedLetters.Contains(uploadData.DriveLetter[0]))
+                {
+                    Debug.Log("Invalid letter given changing to default");
+                    uploadData.DriveLetter = "D:";
+                }
+                else
+                {
+                    uploadData.DriveLetter = uploadData.DriveLetter[0].ToString() + ":";
+                }
+
+                GUILayout.Label("Storage Type: ", EditorStyles.largeLabel);
+                uploadData.storageType = GUILayout.TextField(uploadData.storageType, EditorStyles.textField);
+                uploadData.storageType = uploadData.storageType.Split(' ')[0];
+
+                if (uploadData.storageType.ToLower().Equals("official"))
+                {
+                    uploadData.storageType = "OFFICIAL";
+                }
+                else if (uploadData.storageType.ToLower().Equals("sd2vita"))
+                {
+                    uploadData.storageType = "sd2vita";
+                }
+            }
+
+            uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder: ", uploadData.CustomUploaderFolder);
+
+            if (uploadData.CustomUploaderFolder)
+            {
+                if (GUILayout.Button("Browse"))
+                {
+                    ThreadStart start = new ThreadStart(ShowDialog);
+                    Thread thread = new Thread(start);
+                    thread.Start();
+                }
+                EditorGUILayout.Space();
+            }
+
+            if (GUILayout.Button("Save Configuration"))
+                File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
+
+
+            if (GUILayout.Button("Build VPK"))
+                UploadBuild.BuildVPKMenu();
+            if (GUILayout.Button("Complete Install"))
+                UploadBuild.UploadVPK();
+            if (GUILayout.Button("Replace Install"))
+                UploadBuild.ReplaceInstall();
+
+
+
+            EditorGUILayout.EndScrollView();
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
         }
-        uploadData.KeepFolderAfterBuild = EditorGUILayout.Toggle("Keep build folder", uploadData.KeepFolderAfterBuild);
-        uploadData.ExtractOnPC = EditorGUILayout.Toggle("Extract VPK on PC", uploadData.ExtractOnPC);
-
-        GUILayout.Label("IP Adress: ", EditorStyles.largeLabel);
-        uploadData.IP = EditorGUILayout.TextField(uploadData.IP,EditorStyles.numberField).Split(' ')[0];
-        uploadData.UseUSB = EditorGUILayout.Toggle("Use USB: ",uploadData.UseUSB);
-        if(uploadData.UseUSB)
+        else
         {
-            GUILayout.Label("Drive Letter: ", EditorStyles.largeLabel);
-            uploadData.DriveLetter = EditorGUILayout.TextField(uploadData.DriveLetter).Split(' ')[0];
-
-            if(uploadData.DriveLetter.Length != 1 && violatedLetters.Contains(uploadData.DriveLetter[0]))
-            {
-                Debug.Log("Invalid letter given changing to default");
-                uploadData.DriveLetter = "D:";
-            }
-            else
-            {
-                uploadData.DriveLetter = uploadData.DriveLetter[0].ToString() + ":";
-            }
-            
-            GUILayout.Label("Storage Type: ", EditorStyles.largeLabel);
-            uploadData.storageType = GUILayout.TextField(uploadData.storageType,EditorStyles.textField);
-            uploadData.storageType = uploadData.storageType.Split(' ')[0];
-            
-            if(uploadData.storageType.ToLower().Equals("official"))
-            {
-                uploadData.storageType = "OFFICIAL";
-            }
-            else if(uploadData.storageType.ToLower().Equals("sd2vita"))
-            {
-                uploadData.storageType = "sd2vita";
-            }
-        }
-
-        uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder: ", uploadData.CustomUploaderFolder);
-
-        if(uploadData.CustomUploaderFolder)
-        {
-            if(GUILayout.Button("Browse"))
-            {
-                ThreadStart start = new ThreadStart(ShowDialog);
-                Thread thread = new Thread(start);
-                thread.Start();
-            }
             EditorGUILayout.Space();
+            EditorGUILayout.BeginVertical();
+            EditorGUILayout.BeginHorizontal();
+            scrollView = EditorGUILayout.BeginScrollView(scrollView, false, false);
+            if (uploadData == null)
+                GetUploadData();
+            uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end: ", uploadData.startOnBuildEnd);
+            if (uploadData.startOnBuildEnd)
+            {
+                uploadData.UseReplaceInstallOnEnd = EditorGUILayout.Toggle("Use replace install", uploadData.UseReplaceInstallOnEnd);
+            }
+            uploadData.KeepFolderAfterBuild = EditorGUILayout.Toggle("Keep build folder", uploadData.KeepFolderAfterBuild);
+            uploadData.ExtractOnPC = EditorGUILayout.Toggle("Extract VPK on PC", uploadData.ExtractOnPC);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("IP Adress: ", EditorStyles.largeLabel);
+            GUILayout.FlexibleSpace();
+            uploadData.IP = EditorGUILayout.TextField(uploadData.IP, EditorStyles.numberField, width112).Split(' ')[0];
+            GUILayout.EndHorizontal();
+            uploadData.UseUSB = EditorGUILayout.Toggle("Use USB: ", uploadData.UseUSB);
+            if (uploadData.UseUSB)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Drive Letter: ", EditorStyles.largeLabel);
+                GUILayout.FlexibleSpace();
+                uploadData.DriveLetter = EditorGUILayout.TextField(uploadData.DriveLetter, width112).Split(' ')[0];
+                GUILayout.EndHorizontal();
+                if (uploadData.DriveLetter.Length != 1 && violatedLetters.Contains(uploadData.DriveLetter[0]))
+                {
+                    Debug.Log("Invalid letter given changing to default");
+                    uploadData.DriveLetter = "D:";
+                }
+                else
+                {
+                    uploadData.DriveLetter = uploadData.DriveLetter[0].ToString() + ":";
+                }
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Storage Type: ", EditorStyles.largeLabel);
+                uploadData.storageType = GUILayout.TextField(uploadData.storageType, EditorStyles.textField, width112);
+                uploadData.storageType = uploadData.storageType.Split(' ')[0];
+
+                if (uploadData.storageType.ToLower().Equals("official"))
+                {
+                    uploadData.storageType = "OFFICIAL";
+                }
+                else if (uploadData.storageType.ToLower().Equals("sd2vita"))
+                {
+                    uploadData.storageType = "sd2vita";
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.BeginHorizontal();
+            uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder: ", uploadData.CustomUploaderFolder);
+
+            if (uploadData.CustomUploaderFolder)
+            {
+                if (GUILayout.Button("Browse", width112))
+                {
+                    ThreadStart start = new ThreadStart(ShowDialog);
+                    Thread thread = new Thread(start);
+                    thread.Start();
+                }
+                GUILayout.EndHorizontal();
+                EditorGUILayout.Space();
+            }
+            else GUILayout.EndHorizontal();
+
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Save Configuration", GUILayout.Width(120)))
+            {
+                File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
+                Debug.Log("Configuration Saved!");
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Space(12);
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Build VPK"))
+                UploadBuild.BuildVPKMenu();
+            if (GUILayout.Button("Complete Install"))
+                UploadBuild.UploadVPK();
+            if (GUILayout.Button("Replace Install"))
+                UploadBuild.ReplaceInstall();
+            GUILayout.EndHorizontal();
+
+
+            EditorGUILayout.EndScrollView();
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
         }
-
-        if(GUILayout.Button("Save Configuration"))
-            File.WriteAllText(SavePath,JsonUtility.ToJson(uploadData));
-        
-
-        if(GUILayout.Button("Build VPK"))
-            UploadBuild.BuildVPKMenu();
-        if(GUILayout.Button("Complete Install"))
-            UploadBuild.UploadVPK();
-        if (GUILayout.Button("Replace Install"))
-            UploadBuild.ReplaceInstall();
-
-
-
-        EditorGUILayout.EndScrollView();
-        EditorGUILayout.EndHorizontal();
-        EditorGUILayout.EndVertical();
     }
 
     void ShowDialog()
