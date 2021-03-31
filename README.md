@@ -19,7 +19,7 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 1. Enter your vita IP and other settings in the menu item VitaFTPI/Options and if you haven't placed the uploader folder in your project directory enable custom uploader path and browse to your uploader folder.
 1. Make sure your vita has vitacompanion installed. It's a plugin by devnoname120.
 1. Install the vita app for this tool from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
-1. Try to build like normal and sit back and relax.
+1. Done!! You  can now do a complete install once and then later on use the replace install method.
 
 # Known Issues:
 ***Nothing to see here***
