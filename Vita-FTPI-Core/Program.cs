@@ -252,6 +252,7 @@ namespace Vita_FTPI_Core
                 Console.WriteLine("Waiting for Unity-Loader to finish...");
                 while (!ftpSession.FileExists(configDir + "/RUNCOMPLETE"))
                     Thread.Sleep(1);
+                Thread.Sleep(100);
                 launchApp(TitleID);
                 goto EXIT;
             }

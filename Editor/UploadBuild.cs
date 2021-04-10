@@ -44,7 +44,41 @@ public class UploadBuild
 		 return projectName;
  	}
 
-    static int PreSetup()
+	public static bool HasStarted;
+	static Process process;
+
+	public static void StartDebug()
+	{
+		if (PreSetup() < 0) return;
+		ProcessStartInfo info = new ProcessStartInfo();
+		info.FileName = UploaderPath + "/DebugPortReader.exe";
+		info.RedirectStandardOutput = true;
+		info.UseShellExecute = false;
+		process = new Process();
+		process.EnableRaisingEvents = true;
+		process.OutputDataReceived += Process_OutputDataReceived;
+		process.StartInfo = info;
+		process.Start();
+		process.BeginOutputReadLine();
+
+
+		HasStarted = true;
+	}
+
+	public static void StopDebug()
+	{
+		HasStarted = false;
+		process.Kill();
+	}
+
+	private static void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+	{
+		if (e.Data.Contains("[Unity PSP2]"))
+			UnityEngine.Debug.Log(e.Data);
+	}
+
+
+	static int PreSetup()
     {
 		if(buildDir == null)
 			buildDir = File.ReadAllText(LastBuildDirSavePath);
@@ -131,7 +165,7 @@ public class UploadBuild
 		if(PreSetup() < 0)
 			return;
 
-		if(!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk") && !data.ExtractOnPC)
+		if(!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk"))
 		{
 			UnityEngine.Debug.Log("No VPK found! Please build it first");
 			return;
@@ -194,19 +228,7 @@ public class UploadBuild
 			args += " -p";
 		if (!data.KeepFolderAfterBuild)
 			args += " -d";
-		if(Directory.Exists(Application.dataPath + "/CustomPlugins"))
-        {
-			UnityEngine.Debug.Log("Adding custom plugins.....");
-			DirectoryInfo di = new DirectoryInfo(Application.dataPath + "/CustomPlugins");
-			foreach(FileInfo file in di.GetFiles())
-            {
-				if(file.Extension == ".suprx" || file.Extension == ".skprx")
-                {
-					UnityEngine.Debug.Log("Copying " + file.Name + " to: " + buildDir + "/Media/Plugins/" + file.Name);
-					file.CopyTo(buildDir + "/Media/Plugins/" + file.Name, true);
-				}
-			}
-        }
+		
 
 		ProcessStartInfo processStartInfo = new ProcessStartInfo();
 		processStartInfo.FileName = UploaderPath + "/UnityTools.exe";

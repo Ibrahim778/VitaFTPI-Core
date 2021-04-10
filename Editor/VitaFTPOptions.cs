@@ -155,9 +155,16 @@ public class VitaFTPOptions : EditorWindow
                 UploadBuild.UploadVPK();
             if (GUILayout.Button("Replace Install"))
                 UploadBuild.ReplaceInstall();
-
-
-
+            if (!UploadBuild.HasStarted)
+            {
+                if (GUILayout.Button("Start Debug"))
+                    UploadBuild.StartDebug();
+            }
+            else if(UploadBuild.HasStarted)
+            {
+                if (GUILayout.Button("Stop Debug"))
+                    UploadBuild.StopDebug();
+            }
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
@@ -248,6 +255,16 @@ public class VitaFTPOptions : EditorWindow
                 UploadBuild.UploadVPK();
             if (GUILayout.Button("Replace Install"))
                 UploadBuild.ReplaceInstall();
+            if (!UploadBuild.HasStarted)
+            {
+                if (GUILayout.Button("Start Debug"))
+                    UploadBuild.StartDebug();
+            }
+            else if(UploadBuild.HasStarted)
+            {
+                if (GUILayout.Button("Stop Debug"))
+                    UploadBuild.StopDebug();
+            }
             GUILayout.EndHorizontal();
 
 

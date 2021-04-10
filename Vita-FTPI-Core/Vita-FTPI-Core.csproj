@@ -4,10 +4,15 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Vita_FTPI_Core</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="WinSCP" Version="5.17.10" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /E /H /Y /K $(OutDir)* C:\Users\Ibrahim\Documents\Uploader\" />
+  </Target>
 
 </Project>
