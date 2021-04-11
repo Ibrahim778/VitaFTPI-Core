@@ -249,8 +249,6 @@ public class VitaFTPOptions : EditorWindow
             GUILayout.Space(12);
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Build VPK"))
-                UploadBuild.BuildVPKMenu();
             if (GUILayout.Button("Complete Install"))
                 UploadBuild.UploadVPK();
             if (GUILayout.Button("Replace Install"))

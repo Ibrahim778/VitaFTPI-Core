@@ -135,8 +135,10 @@ public class UploadBuild
 		UnityEngine.Debug.Log("Launching VitaFPTI");
 
 
-		string args = "--vpk \"" + UploaderPath + "/" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
-			boolToString(data.UseUSB) + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" 
+		CopyCustomFiles();
+
+		string args = "--vpk \"" + UploaderPath + "\\" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
+			data.UseUSB.ToString() + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" 
 			+ data.UploaderFolder + "\"" + " --titleid " + Regex.Matches(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])")[0];
 		if (data.ExtractOnPC)
 		{
@@ -157,6 +159,41 @@ public class UploadBuild
 		VitaFTPI.Start();
 		UnityEngine.Debug.Log("Done!");
 	}
+
+	static void CopyCustomFiles()
+    {
+		if (Directory.Exists(Application.dataPath + "\\CustomPlugins")) 
+		{
+			foreach (FileInfo file in new DirectoryInfo(Application.dataPath + "\\CustomPlugins").GetFiles())
+			{
+				if (file.Extension.Equals(".suprx") || file.Extension.Equals(".skprx")) 
+				{
+					UnityEngine.Debug.Log("Copying " + file.Name + " to: " + buildDir + "/Media/Plugins/" + file.Name);
+					file.CopyTo(buildDir + "\\Media\\Plugins\\" + file.Name, true);
+				}
+			} 
+		}
+		if(Directory.Exists(Application.dataPath + "\\CustomSelfs"))
+        {
+			foreach (FileInfo file in new DirectoryInfo(Application.dataPath + "\\CustomSelfs").GetFiles())
+            {
+                if (file.Extension.Equals(".self"))
+                {
+                    if (file.Name.Equals("replace_original_eboot.self"))
+                    {
+						UnityEngine.Debug.Log("Replacing " + file.Name + " as the original eboot.bin");
+						File.Move(buildDir + "\\eboot.bin", buildDir + "\\original_eboot.bin");
+						file.CopyTo(buildDir + "\\" + file.Name.Replace(".self", ".bin"), true);
+					}
+                    else
+                    {
+						UnityEngine.Debug.Log("Copying " + file.Name + " to: " + buildDir + "\\" + file.Name.Replace(".self", ".bin"));
+						file.CopyTo(buildDir + "\\" + file.Name.Replace(".self", ".bin"), true);
+					}
+                }
+            }
+        }
+    }
 
 	[MenuItem("VitaFTPI/Upload VPK")]
 	public static void UploadVPK()
@@ -183,8 +220,10 @@ public class UploadBuild
 			}
 		}
 
-		string args = "--vpk \"" + UploaderPath + "/" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
-	boolToString(data.UseUSB) + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" + data.UploaderFolder 
+		CopyCustomFiles();
+
+		string args = "--vpk \"" + UploaderPath + "\\" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
+	data.UseUSB.ToString() + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" + data.UploaderFolder 
 	+ "\"" + " --titleid " + Regex.Matches(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])")[0];
 
 		if (data.ExtractOnPC)
@@ -223,7 +262,7 @@ public class UploadBuild
 		if(!Directory.Exists(File.ReadAllText(LastBuildDirSavePath)))
 			UnityEngine.Debug.Log("No build directory found!");
 		
-		string args = "-i \"" + buildDir + "\" -o \"" + UploaderPath + "/" + GetProjectName() + "\"" + " -f -u -r";
+		string args = "-i \"" + buildDir + "\" -o \"" + UploaderPath + "\\" + GetProjectName() + "\"" + " -f -u -r";
 		if (!data.ExtractOnPC)
 			args += " -p";
 		if (!data.KeepFolderAfterBuild)
@@ -247,11 +286,5 @@ public class UploadBuild
 		
 		EXIT:
 			UnityEngine.Debug.Log("Done!");
-	}
-
-	static string boolToString(bool val)
-	{
-		if(val) return "true";
-		else return "false";
 	}
 }
