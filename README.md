@@ -10,7 +10,7 @@ This also uses WinSCP to transfer files and commands over FTP so credit goes to 
 Do note that you NEED vitashell to be installed to use usb mode. You should already have vitashell installed so you can ignore this in most cases.
 
 # How to use: 
-## Installing: 
+## Installing (Unity): 
 1. Download and extract the Tools.zip folder from the releases tab.
 1. Copy the Editor folder to your assets folder.
 1. Copy the Uploader folder to any folder in your pc (try documents).
@@ -19,11 +19,13 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 1. Install the vita app for this tool from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
 1. Done!! You  can now do a complete install once and then later on use the replace install method.
 
-## Using the Debug feature: 
+## Using the Debug feature (Unity): 
 This is not a full blown debug implimentation in unity. This will only allow you to read the Debug.Log's called in your app running in the vita inside unity like you do on PC.
-For this to work you need to setup PrincessLog on your vita, it's a tool made by @The-Princess-of-Sleeping. You can download the files from [here](https://github.com/CelesteBlue-dev/PSVita-RE-tools/tree/master/PrincessLog/build), Install the skprx under kernel in your taihen config and Install the vpk and enter your pc's ip leave the port at default and press save config then reboot your vita. 
+For this to work you need to setup PrincessLog on your vita, it's a tool made by @The-Princess-of-Sleeping. You can download the files from [here](https://github.com/CelesteBlue-dev/PSVita-RE-tools/tree/master/PrincessLog/build), Install the skprx under kernel in your taihen config and Install the vpk and enter your pc's ip leave the port at default and press save config then reboot your vita. Do note that when you press start debug a new window will open. This is normal and you can ignore it but *DO NOT CLOSE IT*.
 
 Then to call the logs from within unity you need to copy the Plugins folder from the release into your assets folder. Then you can use the sample log script provided and copy it into your project or you can make your own. If you use the sample script it will automatically override your debug.logs depending on the platform so there is no need to worry.
+
+Do remember this uses the official sdk for printing it to the logs. So do remember to remove the plugins and debug script when compiling the final release.
 
 # Known Issues:
 1. Udcd unloading works but once the usb transfer has completed reloading it hangs unity loader. you need to exit to the livearea and re-enter into the app for it to work.
