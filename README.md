@@ -9,7 +9,7 @@ This also uses WinSCP to transfer files and commands over FTP so credit goes to 
 
 Do note that you NEED vitashell to be installed to use usb mode. You should already have vitashell installed so you can ignore this in most cases.
 
-# How to use: 
+# How to use
 ## Installing (Unity): 
 1. Download and extract the Tools.zip folder from the releases tab.
 1. Copy the Editor folder to your assets folder.
