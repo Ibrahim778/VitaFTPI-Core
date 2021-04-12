@@ -1,5 +1,5 @@
 # What is it?
-This is a tool that makes Unity Development on the vita much easier. It uses Silica's Unity tools and my remake of NetDbgLogPc by @Princess-of-Sleeping.
+This is a tool that makes Unity Development (or development in general) on the vita much easier. It uses Silica's Unity tools and my remake of NetDbgLogPc by @Princess-of-Sleeping.
 
 This tool is based off of a program made my Jordi at jllopisol@gmail.com. This program wouldn't be possible without his work so if you like this program consider donating to him via paypal [here](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMFDRTBU49E8E)
 
