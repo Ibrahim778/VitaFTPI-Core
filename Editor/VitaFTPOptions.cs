@@ -105,19 +105,6 @@ public class VitaFTPOptions : EditorWindow
             uploadData.UseUSB = EditorGUILayout.Toggle("Use USB: ", uploadData.UseUSB);
             if (uploadData.UseUSB)
             {
-                GUILayout.Label("Drive Letter: ", EditorStyles.largeLabel);
-                uploadData.DriveLetter = EditorGUILayout.TextField(uploadData.DriveLetter).Split(' ')[0];
-
-                if (uploadData.DriveLetter.Length != 1 && violatedLetters.Contains(uploadData.DriveLetter[0]))
-                {
-                    Debug.Log("Invalid letter given changing to default");
-                    uploadData.DriveLetter = "D:";
-                }
-                else
-                {
-                    uploadData.DriveLetter = uploadData.DriveLetter[0].ToString() + ":";
-                }
-
                 GUILayout.Label("Storage Type: ", EditorStyles.largeLabel);
                 uploadData.storageType = GUILayout.TextField(uploadData.storageType, EditorStyles.textField);
                 uploadData.storageType = uploadData.storageType.Split(' ')[0];
@@ -192,20 +179,6 @@ public class VitaFTPOptions : EditorWindow
             uploadData.UseUSB = EditorGUILayout.Toggle("Use USB: ", uploadData.UseUSB);
             if (uploadData.UseUSB)
             {
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Drive Letter: ", EditorStyles.largeLabel);
-                GUILayout.FlexibleSpace();
-                uploadData.DriveLetter = EditorGUILayout.TextField(uploadData.DriveLetter, width112).Split(' ')[0];
-                GUILayout.EndHorizontal();
-                if (uploadData.DriveLetter.Length != 1 && violatedLetters.Contains(uploadData.DriveLetter[0]))
-                {
-                    Debug.Log("Invalid letter given changing to default");
-                    uploadData.DriveLetter = "D:";
-                }
-                else
-                {
-                    uploadData.DriveLetter = uploadData.DriveLetter[0].ToString() + ":";
-                }
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Storage Type: ", EditorStyles.largeLabel);
                 uploadData.storageType = GUILayout.TextField(uploadData.storageType, EditorStyles.textField, width112);
