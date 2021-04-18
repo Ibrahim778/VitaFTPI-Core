@@ -49,7 +49,7 @@ Do remember this uses the official sdk for printing it to the logs. So do rememb
 
 # Updating
 
-Updating is simple *replace* the Uploader, Editor and Plugins folder.
+Updating is simple *replace* the Uploader, Editor and Plugins inside the Plugins folder.
 
 # Warnings:
 1. If uma0: is mounted usb mode will corrupt the data in it. uma0: is usally used for usb's in a pstv and for psvsd. So be careful! You have been warned.
