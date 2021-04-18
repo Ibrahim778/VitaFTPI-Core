@@ -9,6 +9,8 @@ public class VitaFTPOptions : EditorWindow
     public static bool UploadOnBuildEnd = false;
     public static string SavePath;
     public static Vector2 scrollView;
+    public string[] storageOptions = new string[] {"OFFICIAL", "sd2vita"};
+    public string[] storageOptionsVisual = new string[] {"Official Storage", "SD2Vita (Gamecard Adapter)"};
     private static UploadData uploadData;
     private static List<char> violatedLetters = new List<char>()
     {
@@ -50,7 +52,7 @@ public class VitaFTPOptions : EditorWindow
     [MenuItem("VitaFTPI/Options")]
     public static void ShowWindow()
     {
-        GetWindow<VitaFTPOptions>("Upload Options");
+        GetWindow<VitaFTPOptions>("VitaFTPI Options");
     }
 
     void OnEnable()
@@ -63,6 +65,7 @@ public class VitaFTPOptions : EditorWindow
         SavePath = Application.dataPath + "/VitaFTPI/SaveConfig.txt";
         GetUploadData();
 #endif
+
     }
 
     static void GetUploadData()
@@ -81,8 +84,9 @@ public class VitaFTPOptions : EditorWindow
         EditorGUILayout.HelpBox("This is a PSVITA only tool, To use it set your build target to PSVITA!", MessageType.Warning);
         return;
 #else
-        EditorGUILayout.HelpBox("Remember to save your configuration every time you make a change before doing anything", MessageType.Info);
+        //EditorGUILayout.HelpBox("Remember to save your configuration every time you make a change before doing anything", MessageType.Info);
 #endif
+
 
         if(File.Exists(Application.dataPath + "/VitaFTPI/OLDLAYOUT"))
         {
@@ -92,7 +96,7 @@ public class VitaFTPOptions : EditorWindow
             scrollView = EditorGUILayout.BeginScrollView(scrollView, false, false);
             if (uploadData == null)
                 GetUploadData();
-            uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end: ", uploadData.startOnBuildEnd);
+            uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end", uploadData.startOnBuildEnd);
             if (uploadData.startOnBuildEnd)
             {
                 uploadData.UseReplaceInstallOnEnd = EditorGUILayout.Toggle("Use replace install", uploadData.UseReplaceInstallOnEnd);
@@ -102,39 +106,36 @@ public class VitaFTPOptions : EditorWindow
 
             GUILayout.Label("IP Adress: ", EditorStyles.largeLabel);
             uploadData.IP = EditorGUILayout.TextField(uploadData.IP, EditorStyles.numberField).Split(' ')[0];
-            uploadData.UseUSB = EditorGUILayout.Toggle("Use USB: ", uploadData.UseUSB);
+            uploadData.UseUSB = EditorGUILayout.Toggle("Use USB", uploadData.UseUSB);
             if (uploadData.UseUSB)
             {
-                GUILayout.Label("Storage Type: ", EditorStyles.largeLabel);
-                uploadData.storageType = GUILayout.TextField(uploadData.storageType, EditorStyles.textField);
-                uploadData.storageType = uploadData.storageType.Split(' ')[0];
+                GUILayout.Label("Storage Type (PSVita)", EditorStyles.largeLabel);
+				uploadData.storageIndex = EditorGUILayout.Popup(uploadData.storageIndex, storageOptionsVisual);
+				uploadData.storageType = storageOptions[uploadData.storageIndex];
 
-                if (uploadData.storageType.ToLower().Equals("official"))
-                {
-                    uploadData.storageType = "OFFICIAL";
-                }
-                else if (uploadData.storageType.ToLower().Equals("sd2vita"))
-                {
-                    uploadData.storageType = "sd2vita";
-                }
             }
 
-            uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder: ", uploadData.CustomUploaderFolder);
+            uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder", uploadData.CustomUploaderFolder);
 
             if (uploadData.CustomUploaderFolder)
             {
                 if (GUILayout.Button("Browse"))
                 {
-                    ThreadStart start = new ThreadStart(ShowDialog);
-                    Thread thread = new Thread(start);
-                    thread.Start();
+					uploadData.UploaderFolder = EditorUtility.OpenFolderPanel("Select Uploader Folder", uploadData.UploaderFolder, "");
                 }
                 EditorGUILayout.Space();
             }
 
-            if (GUILayout.Button("Save Configuration"))
+			if(GUI.changed){
                 File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
-
+				AssetDatabase.ImportAsset("Assets/VitaFTPI/SaveConfig.txt");
+                Debug.Log("Configuration Saved!");
+			}
+            if (GUILayout.Button("Save Configuration")){
+                File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
+				AssetDatabase.ImportAsset("Assets/VitaFTPI/SaveConfig.txt");
+                Debug.Log("Configuration Saved!");
+			}
 
             if (GUILayout.Button("Build VPK"))
                 UploadBuild.BuildVPKMenu();
@@ -158,68 +159,100 @@ public class VitaFTPOptions : EditorWindow
         }
         else
         {
-            EditorGUILayout.Space();
+			// new style
+			
             EditorGUILayout.BeginVertical();
+            EditorGUILayout.Space();
+            GUILayout.Label("Build Settings", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
             scrollView = EditorGUILayout.BeginScrollView(scrollView, false, false);
-            if (uploadData == null)
+            if (uploadData == null){
                 GetUploadData();
-            uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end: ", uploadData.startOnBuildEnd);
+			}
+			
+			uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end", uploadData.startOnBuildEnd);
             if (uploadData.startOnBuildEnd)
             {
                 uploadData.UseReplaceInstallOnEnd = EditorGUILayout.Toggle("Use replace install", uploadData.UseReplaceInstallOnEnd);
             }
+			
+			GUILayout.Space(7);
             uploadData.KeepFolderAfterBuild = EditorGUILayout.Toggle("Keep build folder", uploadData.KeepFolderAfterBuild);
+			GUILayout.Space(5);
             uploadData.ExtractOnPC = EditorGUILayout.Toggle("Extract VPK on PC", uploadData.ExtractOnPC);
+			
+			EditorGUILayout.Space();
+			GuiLine(1);
+			EditorGUILayout.Space();
+			
+            GUILayout.Label("Connection Settings", EditorStyles.boldLabel);
+			
             GUILayout.BeginHorizontal();
-            GUILayout.Label("IP Adress: ", EditorStyles.largeLabel);
+            GUILayout.Label("IP Adress");
             GUILayout.FlexibleSpace();
             uploadData.IP = EditorGUILayout.TextField(uploadData.IP, EditorStyles.numberField, width112).Split(' ')[0];
             GUILayout.EndHorizontal();
-            uploadData.UseUSB = EditorGUILayout.Toggle("Use USB: ", uploadData.UseUSB);
+			
+			GUILayout.Space(4);
+            uploadData.UseUSB = EditorGUILayout.Toggle("Use USB", uploadData.UseUSB);
             if (uploadData.UseUSB)
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Storage Type: ", EditorStyles.largeLabel);
-                uploadData.storageType = GUILayout.TextField(uploadData.storageType, EditorStyles.textField, width112);
-                uploadData.storageType = uploadData.storageType.Split(' ')[0];
-
-                if (uploadData.storageType.ToLower().Equals("official"))
-                {
-                    uploadData.storageType = "OFFICIAL";
-                }
-                else if (uploadData.storageType.ToLower().Equals("sd2vita"))
-                {
-                    uploadData.storageType = "sd2vita";
-                }
+                GUILayout.Label("Storage Type (PSVita)");
+				uploadData.storageIndex = EditorGUILayout.Popup(uploadData.storageIndex, storageOptionsVisual);
+				uploadData.storageType = storageOptions[uploadData.storageIndex];
                 GUILayout.EndHorizontal();
             }
+			
+			GUILayout.Space(8);
             GUILayout.BeginHorizontal();
-            uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder: ", uploadData.CustomUploaderFolder);
+            uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder", uploadData.CustomUploaderFolder);
 
             if (uploadData.CustomUploaderFolder)
             {
                 if (GUILayout.Button("Browse", width112))
                 {
-                    ThreadStart start = new ThreadStart(ShowDialog);
-                    Thread thread = new Thread(start);
-                    thread.Start();
+					uploadData.UploaderFolder = EditorUtility.OpenFolderPanel("Select Uploader Folder", uploadData.UploaderFolder, "");
                 }
                 GUILayout.EndHorizontal();
                 EditorGUILayout.Space();
             }
             else GUILayout.EndHorizontal();
 
+			EditorGUILayout.Space();
+			GuiLine(1);
+			EditorGUILayout.Space();
 
+			// Other options
+            GUILayout.Label("Other Settings", EditorStyles.boldLabel);
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Save Configuration", GUILayout.Width(120)))
+			
+			// Should save once you change a field.
+			if(GUI.changed){
+                File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
+				AssetDatabase.ImportAsset("Assets/VitaFTPI/SaveConfig.txt");
+                Debug.Log("Configuration Saved!");
+			}
+			// Just in case manual Save
+            if (GUILayout.Button("(Manual)Save Configuration", GUILayout.Width(200)))
             {
                 File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
+				AssetDatabase.ImportAsset("Assets/VitaFTPI/SaveConfig.txt");
                 Debug.Log("Configuration Saved!");
             }
             GUILayout.EndHorizontal();
-            GUILayout.Space(12);
+			
+			
+			EditorGUILayout.Space();
+			GuiLine(1);
+			EditorGUILayout.Space();
+
+
+			// Install options
+			
+            GUILayout.Label("Install actions", EditorStyles.boldLabel);
+			GUILayout.Space(8);
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Complete Install"))
@@ -239,21 +272,33 @@ public class VitaFTPOptions : EditorWindow
             GUILayout.EndHorizontal();
 
 
+			EditorGUILayout.Space();
+			GuiLine(1);
+			EditorGUILayout.Space();
+
+			
+			EditorGUILayout.Space();
+            GUILayout.Label("Credits: ");
+            GUILayout.Label("VitaFTPI by Ibrahim778");
+            GUILayout.Label("https://github.com/Ibrahim778/VitaFTPI-Core");
+
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
         }
     }
 
-    void ShowDialog()
-    {
-        System.Windows.Forms.FolderBrowserDialog browserDialog = new System.Windows.Forms.FolderBrowserDialog();
-        System.Windows.Forms.DialogResult dialogResult = browserDialog.ShowDialog();
-        if(dialogResult == System.Windows.Forms.DialogResult.OK)
-        {
-            uploadData.UploaderFolder = browserDialog.SelectedPath;
-            Debug.Log("Set Path to : " + uploadData.UploaderFolder);
-        }
-    }
+void GuiLine( int i_height = 1 )
+
+   {
+
+       Rect rect = EditorGUILayout.GetControlRect(false, i_height );
+
+       rect.height = i_height;
+
+       EditorGUI.DrawRect(rect, new Color ( 0.5f,0.5f,0.5f, 1 ) );
+
+   }
+
 }
 

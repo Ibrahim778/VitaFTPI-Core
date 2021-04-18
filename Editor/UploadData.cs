@@ -8,6 +8,7 @@
 
     public bool UseUSB = false;
 
+	public int storageIndex = 0;
     public string storageType = "OFFICIAL";
 
     public bool startOnBuildEnd = false;
