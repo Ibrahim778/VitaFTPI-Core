@@ -55,11 +55,7 @@ Updating is simple *replace* the Uploader, Editor and Plugins folder.
 1. If uma0: is mounted usb mode will corrupt the data in it. uma0: is usally used for usb's in a pstv and for psvsd. So be careful! You have been warned.
 
 # FAQ:
-**1. What do I put as the drive letter?**
-
-Ans: You should only care about this if you are using USB mode you can enable / disable it from the editor window. If you are using USB then you can go into vitashell connect your PSVITA to your pc via usb and note the drive letter you can set that as the letter, including the colon, and disconnect the vita now. Do remember that you vita needs to be connected to your pc via usb while building and only disconnect it after the install process has completed or else your vita WILL freeze.
-
-**2. Can I use USB mode with udcv-uvc plugins?**
+**1. Can I use USB mode with udcv-uvc plugins?**
 
 Ans: Yes! Install the vpk called UnityLoader_udcd, this will automatically unload and load udcd_uvc before and after the transfer. Do be warned this has bugs and I don't recommend you use it on a daily basis. *IMPORTANT* For this to work the plugin needs to be in ur0:tai or ux0:tai and it needs to be named udcd_uvc.skprx so if you use any of the oled or lcd_off plugins just rename them to udcd_uvc.skprx and make sure to change it in your config.txt as well.
 
