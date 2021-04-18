@@ -1,5 +1,5 @@
 # What is it?
-This is a tool that makes Unity Development on the vita much easier. It uses Silica's Unity tools and my remake of NetDbgLogPc by @Princess-of-Sleeping.
+This is a tool (or a collection of them) that makes Unity Development (or development in general) on the vita much easier. It uses Silica's Unity tools and my remake of NetDbgLogPc by @Princess-of-Sleeping.
 
 This tool is based off of a program made my Jordi at jllopisol@gmail.com. This program wouldn't be possible without his work so if you like this program consider donating to him via paypal [here](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMFDRTBU49E8E)
 
@@ -9,7 +9,7 @@ This also uses WinSCP to transfer files and commands over FTP so credit goes to 
 
 Do note that you NEED vitashell to be installed to use usb mode. You should already have vitashell installed so you can ignore this in most cases.
 
-# How to use: 
+# How to use
 ## Installing (Unity): 
 1. Download and extract the Tools.zip folder from the releases tab.
 1. Copy the Editor folder to your assets folder.
@@ -21,7 +21,7 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 
 ## Using the Debug feature (Unity): 
 This is not a full blown debug implimentation in unity. This will only allow you to read the Debug.Log's called in your app running in the vita inside unity like you do on PC.
-For this to work you need to setup PrincessLog on your vita, it's a tool made by @The-Princess-of-Sleeping. You can download the files from [here](https://github.com/CelesteBlue-dev/PSVita-RE-tools/tree/master/PrincessLog/build), Install the skprx under kernel in your taihen config and Install the vpk and enter your pc's ip leave the port at default and press save config then reboot your vita. Do note that when you press start debug a new window will open. This is normal and you can ignore it but *DO NOT CLOSE IT*.
+For this to work you need to setup PrincessLog on your vita, it's a tool made by @The-Princess-of-Sleeping. You can download the files from [here](https://github.com/CelesteBlue-dev/PSVita-RE-tools/tree/master/PrincessLog/build), Install the skprx under kernel in your taihen config and Install the vpk and enter your PC's IP leave the port at default and press save config then reboot your vita. Do note that when you press start debug a new window will open. This is normal and you can ignore it but *DO NOT CLOSE IT*.
 
 Then to call the logs from within unity you need to copy the Plugins folder from the release into your assets folder. Then you can use the sample log script provided and copy it into your project or you can make your own. If you use the sample script it will automatically override your debug.logs depending on the platform so there is no need to worry.
 
@@ -49,17 +49,13 @@ Do remember this uses the official sdk for printing it to the logs. So do rememb
 
 # Updating
 
-Updating is simple *replace* the Uploader, Editor and Plugins folder.
+Updating is simple *replace* the Uploader, Editor and Plugins inside the Plugins folder.
 
 # Warnings:
 1. If uma0: is mounted usb mode will corrupt the data in it. uma0: is usally used for usb's in a pstv and for psvsd. So be careful! You have been warned.
 
 # FAQ:
-**1. What do I put as the drive letter?**
-
-Ans: You should only care about this if you are using USB mode you can enable / disable it from the editor window. If you are using USB then you can go into vitashell connect your PSVITA to your pc via usb and note the drive letter you can set that as the letter, including the colon, and disconnect the vita now. Do remember that you vita needs to be connected to your pc via usb while building and only disconnect it after the install process has completed or else your vita WILL freeze.
-
-**2. Can I use USB mode with udcv-uvc plugins?**
+**1. Can I use USB mode with udcv-uvc plugins?**
 
 Ans: Yes! Install the vpk called UnityLoader_udcd, this will automatically unload and load udcd_uvc before and after the transfer. Do be warned this has bugs and I don't recommend you use it on a daily basis. *IMPORTANT* For this to work the plugin needs to be in ur0:tai or ux0:tai and it needs to be named udcd_uvc.skprx so if you use any of the oled or lcd_off plugins just rename them to udcd_uvc.skprx and make sure to change it in your config.txt as well.
 
