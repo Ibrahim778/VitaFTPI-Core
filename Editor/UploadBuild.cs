@@ -82,7 +82,11 @@ public class UploadBuild
     {
 		if(buildDir == null)
 			buildDir = File.ReadAllText(LastBuildDirSavePath);
-
+		if(!Directory.Exists(buildDir))
+        {
+			UnityEngine.Debug.LogError("No build found!");
+			return -1;
+        }
 		if(data == null && File.Exists(VitaFTPOptions.SavePath))
 			data = JsonUtility.FromJson<UploadData>(File.ReadAllText(VitaFTPOptions.SavePath));
 		else if(!File.Exists(VitaFTPOptions.SavePath))
@@ -138,8 +142,8 @@ public class UploadBuild
 		CopyCustomFiles();
 
 		string args = "--vpk \"" + UploaderPath + "\\" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
-			data.UseUSB.ToString() + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" 
-			+ data.UploaderFolder + "\"" + " --titleid " + Regex.Matches(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])")[0];
+			boolToString(data.UseUSB)  + " --storage-type " + data.storageType + " --upload-dir \"" 
+			+ data.UploaderFolder + "\"";
 		if (data.ExtractOnPC)
 		{
 			args += " --extract";
@@ -182,8 +186,8 @@ public class UploadBuild
                     if (file.Name.Equals("replace_original_eboot.self"))
                     {
 						UnityEngine.Debug.Log("Replacing " + file.Name + " as the original eboot.bin");
-						File.Move(buildDir + "\\eboot.bin", buildDir + "\\original_eboot.bin");
-						file.CopyTo(buildDir + "\\" + file.Name.Replace(".self", ".bin"), true);
+						if(File.Exists(buildDir + "\\eboot.bin")) File.Move(buildDir + "\\eboot.bin", buildDir + "\\original_eboot.bin");
+						file.CopyTo(buildDir + "\\eboot.bin", true);
 					}
                     else
                     {
@@ -222,9 +226,7 @@ public class UploadBuild
 
 		CopyCustomFiles();
 
-		string args = "--vpk \"" + UploaderPath + "\\" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
-	data.UseUSB.ToString() + " --drive-letter " + data.DriveLetter + " --storage-type " + data.storageType + " --upload-dir \"" + data.UploaderFolder 
-	+ "\"" + " --titleid " + Regex.Matches(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])")[0];
+		string args = "--vpk \"" + UploaderPath + "\\" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " + boolToString(data.UseUSB) + " --storage-type " + data.storageType;
 
 		if (data.ExtractOnPC)
         {
@@ -239,6 +241,7 @@ public class UploadBuild
 			VitaFTPIStartInfo.FileName = UploaderPath + "/Vita-FTPI-Core.exe";
 		else
 			VitaFTPIStartInfo.FileName = UploaderPath + "/VitaFTPI.exe";
+		VitaFTPIStartInfo.WorkingDirectory = UploaderPath;
 		Process VitaFTPI = new Process();
 		VitaFTPI.StartInfo = VitaFTPIStartInfo;
 		VitaFTPI.Start();
@@ -250,6 +253,12 @@ public class UploadBuild
 	{
 		BuildVPK(false);
 	}
+
+	static string boolToString(bool a)
+    {
+		if (a) return "true";
+		return "false";
+    }
 
 	static void BuildVPK(bool wait = false)
 	{
