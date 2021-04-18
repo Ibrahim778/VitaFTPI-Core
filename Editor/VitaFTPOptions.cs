@@ -112,6 +112,7 @@ public class VitaFTPOptions : EditorWindow
                 GUILayout.Label("Storage Type (PSVita)", EditorStyles.largeLabel);
 				uploadData.storageIndex = EditorGUILayout.Popup(uploadData.storageIndex, storageOptionsVisual);
 				uploadData.storageType = storageOptions[uploadData.storageIndex];
+
             }
 
             uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder", uploadData.CustomUploaderFolder);

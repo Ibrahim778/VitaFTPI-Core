@@ -3,7 +3,10 @@ using System.Net.Sockets;
 using System.IO;
 using WinSCP;
 using System.Net;
+using System.Linq;
+using System.Collections.Generic;
 using System.IO.Compression;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -25,6 +28,7 @@ struct GameTransferOptions
 {
     public string driveLetter;
     public bool useUSB;
+    public string[] InitialDrives;
 }
 
 struct FTPOptions
@@ -57,9 +61,9 @@ namespace Vita_FTPI_Core
         static string TitleID = "NULL";
         static string[] configFiles = { "/EXTRACTED", "/CONFIG_READY", "/USB", "/sd2vita", "/OFFICIAL", "/RUNCOMPLETE", "/COPYING", "/INSTALL" };
 
+
         static void Main(string[] args)
         {
-           
             if (args.Length == 0)
             {
                 Console.WriteLine("No input specified Aboring!");
@@ -141,6 +145,7 @@ namespace Vita_FTPI_Core
                 {
                     Console.WriteLine("Setting install mode to replace install!");
                     installMode = InstallMode.EXTRACT_REPLACE;
+                    x--;
                 }
                 if (args[x] == "--extract")
                 {
@@ -151,6 +156,7 @@ namespace Vita_FTPI_Core
                 if (args[x] == "--complete-vita-install")
                 {
                     installMode = InstallMode.PROMOTE_EXTRACT_VITA;
+                    x--;
                 }
                 if (args[x] == "--pre-extract")
                 {
@@ -187,6 +193,11 @@ namespace Vita_FTPI_Core
 
             closeAllApps();
             ConfigureOptions();
+            if(transferOptions.useUSB && (transferOptions.driveLetter == "" || transferOptions.driveLetter == null))
+            {
+                Console.WriteLine("Getting list of all drives...");
+                transferOptions.InitialDrives = GetDriveLetters();
+            }
             Console.WriteLine("Connecting to vita...");
             ftpSession.FileTransferProgress += new FileTransferProgressEventHandler(ProgressChanged);
             ftpSession.Open(sessionOptions);
@@ -206,6 +217,8 @@ namespace Vita_FTPI_Core
             if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA || installMode == InstallMode.EXTRACT_REPLACE)
                 if(!preExtracted) ExtractVPK();
 
+            if (TitleID == "NULL") TitleID = GetTitleID();
+
             if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA || installMode == InstallMode.PROMOTE_EXTRACT_VITA)
                 ftpCreateFile(configDir + "/INSTALL");
 
@@ -215,9 +228,24 @@ namespace Vita_FTPI_Core
             if(transferOptions.useUSB)
             {
                 launchApp("UNITYLOAD");
+                if(transferOptions.driveLetter == "" || transferOptions.driveLetter == null)
+                {
+                    while (Enumerable.SequenceEqual(transferOptions.InitialDrives, GetDriveLetters()))
+                        Thread.Sleep(1);
+                }
+                else
+                {
+                    while (!Directory.Exists(transferOptions.driveLetter + "\\data"))
+                        Thread.Sleep(1);
+                }
 
-                while (!Directory.Exists(transferOptions.driveLetter + "/data"))
-                { Thread.Sleep(100); }
+                if (transferOptions.driveLetter == "" || transferOptions.driveLetter == null) transferOptions.driveLetter = GetNewDriveLetter();
+
+                if(transferOptions.driveLetter == "" || transferOptions.driveLetter == null)
+                {
+                    Console.WriteLine("Error new drive not found! Enter one manually! For example: E:");
+                    transferOptions.driveLetter = Console.ReadLine();
+                } 
 
                 if (installMode == InstallMode.EXTRACT_REPLACE)
                     goto EXT_REP;
@@ -231,10 +259,11 @@ namespace Vita_FTPI_Core
                 
                 Thread.Sleep(100);
                 ftpSession.RemoveFile(configDir + "/COPYING");
-                Console.WriteLine("Waiting for Unity-Loader to finish...");
+                /*Console.WriteLine("Waiting for Unity-Loader to finish...");
                 while (!ftpSession.FileExists(configDir + "/RUNCOMPLETE"))
                     Thread.Sleep(1);
                 launchApp(TitleID);
+                */
                 goto EXIT;
             }
             else
@@ -249,11 +278,6 @@ namespace Vita_FTPI_Core
                     ftpUploadFile(VPKPath, SendPath);
 
                 launchApp("UNITYLOAD");
-                Console.WriteLine("Waiting for Unity-Loader to finish...");
-                while (!ftpSession.FileExists(configDir + "/RUNCOMPLETE"))
-                    Thread.Sleep(1);
-                Thread.Sleep(100);
-                launchApp(TitleID);
                 goto EXIT;
             }
 
@@ -270,6 +294,7 @@ namespace Vita_FTPI_Core
                 ftpSession.RemoveFiles("ux0:app/" + TitleID);
                 ftpUploadDirectory(ExtractPath, "ux0:app/" + TitleID);
             }
+            Thread.Sleep(100);
             launchApp(TitleID);
             goto EXIT;
 
@@ -281,6 +306,31 @@ namespace Vita_FTPI_Core
             Console.WriteLine($"Exiting in {0} seconds", exitTime);
             Thread.Sleep(exitTime * 1000);
             Environment.Exit(0);
+        }
+
+        static string GetTitleID()
+        {
+            string Hex = File.ReadAllText(ExtractPath + "/sce_sys/param.sfo");
+            Match titleid = Regex.Match(Hex, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])");
+            return titleid.Value;
+        }
+
+        static string[] GetDriveLetters()
+        {
+            List<string> driveNames = new List<string>();
+            foreach (DriveInfo drive in DriveInfo.GetDrives()) driveNames.Add(drive.Name);
+            return driveNames.ToArray();
+        }
+
+        static string GetNewDriveLetter()
+        {
+            List<string> CurrentDrives = new List<string>();
+
+            foreach (DriveInfo drive in DriveInfo.GetDrives()) CurrentDrives.Add(drive.Name);
+
+            foreach (string drive in transferOptions.InitialDrives) CurrentDrives.Remove(drive);
+
+            return CurrentDrives[0].Remove(CurrentDrives[0].Length - 1);
         }
 
         static void ExtractVPK()
@@ -435,8 +485,7 @@ namespace Vita_FTPI_Core
             }
             foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
             {
-                DirectoryInfo nextTargetSubDir =
-                target.CreateSubdirectory(diSourceSubDir.Name);
+                DirectoryInfo nextTargetSubDir = target.CreateSubdirectory(diSourceSubDir.Name);
                 CopyAll(diSourceSubDir, nextTargetSubDir);
             }
         }
