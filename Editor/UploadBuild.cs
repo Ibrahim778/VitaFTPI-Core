@@ -16,6 +16,13 @@ public class UploadBuild
 	public static string buildDir = null;
 	public static string Path = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
 
+	public static string GetUploadDir()
+    {
+		if (PreSetup() < 0)
+			return null;
+		return data.UploaderFolder;
+    }
+
 	public static void sendCommand(string cmd)
 	{
 		if (PreSetup() < 0)
