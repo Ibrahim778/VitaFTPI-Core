@@ -13,6 +13,7 @@ public class VitaFTPIUpdater
     {
         using (WebClient client = new WebClient())
         {
+            client.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.NoCacheNoStore);
             File.WriteAllText(UploadBuild.Path, client.DownloadString(UploadBuildRemotePath));
             File.WriteAllText(VitaFTPOptions.Path, client.DownloadString(VitaFTPIOptionsRemotePath));
             File.WriteAllText(UploadWrapper.path, client.DownloadString(UploadDataRemotePath));
