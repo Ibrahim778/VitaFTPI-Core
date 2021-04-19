@@ -18,9 +18,7 @@ public class UploadBuild
 
 	public static string GetUploadDir()
     {
-		if (PreSetup() < 0)
-			return null;
-		return data.UploaderFolder;
+		return JsonUtility.FromJson<UploadWrapper.UploadData>(File.ReadAllText(VitaFTPOptions.SavePath)).UploaderFolder;
     }
 
 	public static void sendCommand(string cmd)
