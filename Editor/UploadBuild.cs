@@ -35,7 +35,7 @@ public class UploadBuild
 					sw.Flush();
 					using (StreamReader sr = new StreamReader(ns))
 					{
-						Debug.Log(sr.ReadToEnd());
+						UnityEngine.Debug.Log(sr.ReadToEnd());
 						sr.Close();
 					}
 					sw.Close();
