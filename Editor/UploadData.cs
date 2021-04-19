@@ -1,5 +1,4 @@
-﻿//Test STUFF
-public class UploadWrapper
+﻿public class UploadWrapper
 {
     public static string path = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
 

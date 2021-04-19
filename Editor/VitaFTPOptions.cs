@@ -10,7 +10,7 @@ public class VitaFTPOptions : EditorWindow
     public string[] storageOptions = new string[] {"OFFICIAL", "sd2vita"};
     public string[] storageOptionsVisual = new string[] {"Official Storage", "SD2Vita (Gamecard Adapter)"};
     private static UploadWrapper.UploadData uploadData;
-    public static string Path = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName()
+    public static string Path = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
 
     [MenuItem("VitaFTPI/Options")]
     public static void ShowWindow()
