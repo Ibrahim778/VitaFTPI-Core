@@ -1,6 +1,7 @@
 using UnityEditor;
 using System.IO;
 using UnityEngine;
+using System.Text.RegularExpressions;
 
 public class VitaFTPOptions : EditorWindow 
 {
@@ -235,6 +236,8 @@ public class VitaFTPOptions : EditorWindow
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Update"))
                 VitaFTPIUpdater.Update();
+            if (GUILayout.Button("Launch Game"))
+                UploadBuild.sendCommand("launch " + Regex.Match(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])").Value);
 
             GUILayout.EndHorizontal();
             EditorGUILayout.Space();

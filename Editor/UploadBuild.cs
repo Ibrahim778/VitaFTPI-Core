@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using System.IO;
+using System.Net.Sockets;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -14,6 +15,32 @@ public class UploadBuild
 	public static string LastBuildDirSavePath = Application.dataPath + "/VitaFTPI/LastBuildDir.txt";
 	public static string buildDir = null;
 	public static string Path = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
+
+	public static void sendCommand(string cmd)
+	{
+		if (PreSetup() < 0)
+			return;
+		using (TcpClient client = new TcpClient(data.IP, 1338))
+		{
+			using (NetworkStream ns = client.GetStream())
+			{
+				using (StreamWriter sw = new StreamWriter(ns))
+				{
+					sw.Write(cmd + "\n");
+					sw.Flush();
+					using (StreamReader sr = new StreamReader(ns))
+					{
+						Debug.Log(sr.ReadToEnd());
+						sr.Close();
+					}
+					sw.Close();
+				}
+				ns.Close();
+			}
+			client.Close();
+		}
+	}
+	
 
 	[PostProcessBuildAttribute(1)]
 	public static void OnBuildEnd(BuildTarget target, string pathToBuiltProject)

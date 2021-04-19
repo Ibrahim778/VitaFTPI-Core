@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Net;
 using System.IO;
+using System;
+using System.Collections.Generic;
 
 [ExecuteInEditMode]
 public class VitaFTPIUpdater
@@ -17,6 +19,12 @@ public class VitaFTPIUpdater
             File.WriteAllText(UploadBuild.Path, client.DownloadString(UploadBuildRemotePath));
             File.WriteAllText(VitaFTPOptions.Path, client.DownloadString(VitaFTPIOptionsRemotePath));
             File.WriteAllText(UploadWrapper.path, client.DownloadString(UploadDataRemotePath));
+
+            client.Headers.Add("user-agent", "VitaFTPI Updater");
+
+            Debug.Log(client.DownloadString("https://api.github.com/repos/Ibrahim778/VitaFTPI-Core/releases/latest"));
         }
     }
 }
+
+
