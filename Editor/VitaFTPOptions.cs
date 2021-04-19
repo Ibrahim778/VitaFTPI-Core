@@ -1,8 +1,6 @@
 using UnityEditor;
 using System.IO;
 using UnityEngine;
-using System.Collections.Generic;
-using System.Threading;
 
 public class VitaFTPOptions : EditorWindow 
 {
@@ -11,43 +9,8 @@ public class VitaFTPOptions : EditorWindow
     public static Vector2 scrollView;
     public string[] storageOptions = new string[] {"OFFICIAL", "sd2vita"};
     public string[] storageOptionsVisual = new string[] {"Official Storage", "SD2Vita (Gamecard Adapter)"};
-    private static UploadData uploadData;
-    private static List<char> violatedLetters = new List<char>()
-    {
-        '\'',
-        ']',
-        '[',
-        '{',
-        '}',
-        ':',
-        '-',
-        '+',
-        '=',
-        '1',
-        '2',
-        '3',
-        '4',
-        '5',
-        '6',
-        '7',
-        '8',
-        '9',
-        '0',
-        '`',
-        '~',
-        '+',
-        '_',
-        '/',
-        '\\',
-        '|',
-        ':',
-        ';',
-        '"',
-        ',',
-        '.',
-        '<',
-        '>'
-    };
+    private static UploadWrapper.UploadData uploadData;
+    public static string Path = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName()
 
     [MenuItem("VitaFTPI/Options")]
     public static void ShowWindow()
@@ -72,9 +35,9 @@ public class VitaFTPOptions : EditorWindow
     {
         if(!File.Exists(SavePath))
         {
-            File.WriteAllText(SavePath,JsonUtility.ToJson(new UploadData()));
+            File.WriteAllText(SavePath,JsonUtility.ToJson(new UploadWrapper.UploadData()));
         }
-        uploadData = JsonUtility.FromJson<UploadData>(File.ReadAllText(SavePath));
+        uploadData = JsonUtility.FromJson<UploadWrapper.UploadData>(File.ReadAllText(SavePath));
     }
 
     void OnGUI()
@@ -83,8 +46,6 @@ public class VitaFTPOptions : EditorWindow
 #if !UNITY_PSP2
         EditorGUILayout.HelpBox("This is a PSVITA only tool, To use it set your build target to PSVITA!", MessageType.Warning);
         return;
-#else
-        //EditorGUILayout.HelpBox("Remember to save your configuration every time you make a change before doing anything", MessageType.Info);
 #endif
 
 
@@ -220,28 +181,14 @@ public class VitaFTPOptions : EditorWindow
             else GUILayout.EndHorizontal();
 
 			EditorGUILayout.Space();
-			GuiLine(1);
-			EditorGUILayout.Space();
-
-			// Other options
-            GUILayout.Label("Other Settings", EditorStyles.boldLabel);
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
 			
 			// Should save once you change a field.
-			if(GUI.changed){
-                File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
-				AssetDatabase.ImportAsset("Assets/VitaFTPI/SaveConfig.txt");
-                Debug.Log("Configuration Saved!");
-			}
-			// Just in case manual Save
-            if (GUILayout.Button("(Manual)Save Configuration", GUILayout.Width(200)))
+			if(GUI.changed)
             {
                 File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
 				AssetDatabase.ImportAsset("Assets/VitaFTPI/SaveConfig.txt");
                 Debug.Log("Configuration Saved!");
-            }
-            GUILayout.EndHorizontal();
+			}
 			
 			
 			EditorGUILayout.Space();
@@ -251,10 +198,17 @@ public class VitaFTPOptions : EditorWindow
 
 			// Install options
 			
-            GUILayout.Label("Install actions", EditorStyles.boldLabel);
+            GUILayout.Label("Actions", EditorStyles.boldLabel);
 			GUILayout.Space(8);
 
             GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Build Game"))
+            {
+                GUILayout.EndHorizontal();
+                EditorGUILayout.EndScrollView();
+                EditorGUILayout.EndVertical();
+                UploadBuild.BuildGame();
+            }
             if (GUILayout.Button("Complete Install"))
                 UploadBuild.UploadVPK();
             if (GUILayout.Button("Replace Install"))
@@ -276,11 +230,21 @@ public class VitaFTPOptions : EditorWindow
 			GuiLine(1);
 			EditorGUILayout.Space();
 
-			
-			EditorGUILayout.Space();
-            GUILayout.Label("Credits: ");
-            GUILayout.Label("VitaFTPI by Ibrahim778");
-            GUILayout.Label("https://github.com/Ibrahim778/VitaFTPI-Core");
+            GUILayout.Label("Other", EditorStyles.boldLabel);
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Update"))
+                VitaFTPIUpdater.Update();
+
+            GUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+
+            GuiLine(1);
+            EditorGUILayout.Space();
+
+            EditorGUILayout.Space();
+            GUILayout.Label("Made with <3 by Ibrahim");
+            GUILayout.Label("Layout by Bizzy and iDevOnAParkingLot");
 
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndHorizontal();
@@ -288,17 +252,12 @@ public class VitaFTPOptions : EditorWindow
         }
     }
 
-void GuiLine( int i_height = 1 )
-
-   {
-
+    void GuiLine( int i_height = 1 )
+    {
        Rect rect = EditorGUILayout.GetControlRect(false, i_height );
-
        rect.height = i_height;
-
        EditorGUI.DrawRect(rect, new Color ( 0.5f,0.5f,0.5f, 1 ) );
-
-   }
+    }
 
 }
 

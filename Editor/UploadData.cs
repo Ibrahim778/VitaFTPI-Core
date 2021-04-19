@@ -1,25 +1,31 @@
-﻿public class UploadData
+﻿
+public class UploadWrapper
 {
-    //NO NEED TO CHANGE ANY OF THIS ANYMORE USE THE EDITOR WINDOW IN VitaFTPI/Options
+    public static string path = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
 
-    public string IP = "192.168.1.1";
+    public class UploadData
+    {
+        //NO NEED TO CHANGE ANY OF THIS ANYMORE USE THE EDITOR WINDOW IN VitaFTPI/Options
 
-    public string File_Name = "Build";
+        public string IP = "192.168.1.1";
 
-    public bool UseUSB = false;
+        public string File_Name = "Build";
 
-	public int storageIndex = 0;
-    public string storageType = "OFFICIAL";
+        public bool UseUSB = false;
 
-    public bool startOnBuildEnd = false;
+	    public int storageIndex = 0;
+        public string storageType = "OFFICIAL";
 
-    public bool CustomUploaderFolder;
+        public bool startOnBuildEnd = false;
 
-    public string UploaderFolder;
+        public bool CustomUploaderFolder;
 
-    public bool KeepFolderAfterBuild;
+        public string UploaderFolder;
 
-    public bool ExtractOnPC = true;
+        public bool KeepFolderAfterBuild;
 
-    public bool UseReplaceInstallOnEnd = false;
+        public bool ExtractOnPC = true;
+
+        public bool UseReplaceInstallOnEnd = false;
+    }
 }

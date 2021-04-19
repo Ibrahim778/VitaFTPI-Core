@@ -9,11 +9,11 @@ using System.Threading;
 [ExecuteInEditMode]
 public class UploadBuild 
 {
-	public static UploadData data = null;
+	public static UploadWrapper.UploadData data = null;
 	public static string UploaderPath = null;
 	public static string LastBuildDirSavePath = Application.dataPath + "/VitaFTPI/LastBuildDir.txt";
 	public static string buildDir = null;
-	
+	public static string Path = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
 
 	[PostProcessBuildAttribute(1)]
 	public static void OnBuildEnd(BuildTarget target, string pathToBuiltProject)
@@ -23,7 +23,7 @@ public class UploadBuild
 
 		File.WriteAllText(LastBuildDirSavePath,pathToBuiltProject);
 		if(data == null)
-			data = JsonUtility.FromJson<UploadData>(File.ReadAllText(VitaFTPOptions.SavePath));
+			data = JsonUtility.FromJson<UploadWrapper.UploadData>(File.ReadAllText(VitaFTPOptions.SavePath));
 		if(!data.startOnBuildEnd)
 			return;
 
@@ -88,7 +88,7 @@ public class UploadBuild
 			return -1;
         }
 		if(data == null && File.Exists(VitaFTPOptions.SavePath))
-			data = JsonUtility.FromJson<UploadData>(File.ReadAllText(VitaFTPOptions.SavePath));
+			data = JsonUtility.FromJson<UploadWrapper.UploadData>(File.ReadAllText(VitaFTPOptions.SavePath));
 		else if(!File.Exists(VitaFTPOptions.SavePath))
 		{
 			UnityEngine.Debug.Log("Please configure options under VitaFTPI/Options");
@@ -119,7 +119,7 @@ public class UploadBuild
 
 		if (!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk") && !data.ExtractOnPC)
 		{
-			UnityEngine.Debug.Log("No VPK found! Please build it first");
+			UnityEngine.Debug.Log("No VPK found! Please pack it first");
 			return;
 		}
 
@@ -150,6 +150,7 @@ public class UploadBuild
 			args += " --pre-extract \"" + buildDir + "\"";
 		}
 		args += " --replace-install";
+		args += " --compare";
 
 
 		ProcessStartInfo VitaFTPIStartInfo = new ProcessStartInfo();
@@ -162,6 +163,20 @@ public class UploadBuild
 		VitaFTPI.StartInfo = VitaFTPIStartInfo;
 		VitaFTPI.Start();
 		UnityEngine.Debug.Log("Done!");
+	}
+
+	public static void BuildGame()
+    {
+		if (PreSetup() < 0)
+			return;
+
+		int sceneCount = UnityEngine.SceneManagement.SceneManager.sceneCountInBuildSettings;
+		string[] scenes = new string[sceneCount];
+		for (int i = 0; i < sceneCount; i++)
+		{
+			scenes[i] = UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(i);
+		}
+		BuildPipeline.BuildPlayer(scenes, buildDir, BuildTarget.PSP2, BuildOptions.None);
 	}
 
 	static void CopyCustomFiles()
@@ -208,7 +223,7 @@ public class UploadBuild
 
 		if(!File.Exists(UploaderPath + "/" + GetProjectName() + ".vpk"))
 		{
-			UnityEngine.Debug.Log("No VPK found! Please build it first");
+			UnityEngine.Debug.Log("No VPK found! Please pack it first");
 			return;
 		}
 		if (data.ExtractOnPC)

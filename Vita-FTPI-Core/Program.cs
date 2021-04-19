@@ -6,9 +6,10 @@ using System.Net;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO.Compression;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Security.Cryptography;
+
 
 enum StorageType
 {
@@ -45,6 +46,7 @@ namespace Vita_FTPI_Core
         static int exitTime = 1;
         static ProgressBar currentBar;
         static bool preExtracted = false;
+        static bool CompareReplace = false;
         static InstallMode installMode = InstallMode.PROMOTE_EXTRACT_VITA;
         static StorageType storageType;
         static FTPOptions ftpOptions;
@@ -59,6 +61,7 @@ namespace Vita_FTPI_Core
         static string configDir = "ux0:/data/UnityLoader";
         static string TempFileName = "tempFile";
         static string TitleID = "NULL";
+        static MD5 Md5 = MD5.Create();
         static string[] configFiles = { "/EXTRACTED", "/CONFIG_READY", "/USB", "/sd2vita", "/OFFICIAL", "/RUNCOMPLETE", "/COPYING", "/INSTALL" };
 
 
@@ -164,6 +167,11 @@ namespace Vita_FTPI_Core
                     preExtracted = true;
                     ExtractPath = args[x + 1];
                 }
+                if(args[x] == "--compare")
+                {
+                    CompareReplace = true;
+                    x--;
+                }
             }
 
             if (Directory.Exists("Uploader") && UploadFolder == "")
@@ -232,20 +240,18 @@ namespace Vita_FTPI_Core
                 {
                     while (Enumerable.SequenceEqual(transferOptions.InitialDrives, GetDriveLetters()))
                         Thread.Sleep(1);
+                    transferOptions.driveLetter = GetNewDriveLetter();
+                    if(transferOptions.driveLetter == "" || transferOptions.driveLetter == null)
+                    {
+                        Console.WriteLine("Error new drive not found! Enter one manually! For example: E:");
+                        transferOptions.driveLetter = Console.ReadLine();
+                    }
                 }
                 else
                 {
                     while (!Directory.Exists(transferOptions.driveLetter + "\\data"))
                         Thread.Sleep(1);
                 }
-
-                if (transferOptions.driveLetter == "" || transferOptions.driveLetter == null) transferOptions.driveLetter = GetNewDriveLetter();
-
-                if(transferOptions.driveLetter == "" || transferOptions.driveLetter == null)
-                {
-                    Console.WriteLine("Error new drive not found! Enter one manually! For example: E:");
-                    transferOptions.driveLetter = Console.ReadLine();
-                } 
 
                 if (installMode == InstallMode.EXTRACT_REPLACE)
                     goto EXT_REP;
@@ -259,11 +265,6 @@ namespace Vita_FTPI_Core
                 
                 Thread.Sleep(100);
                 ftpSession.RemoveFile(configDir + "/COPYING");
-                /*Console.WriteLine("Waiting for Unity-Loader to finish...");
-                while (!ftpSession.FileExists(configDir + "/RUNCOMPLETE"))
-                    Thread.Sleep(1);
-                launchApp(TitleID);
-                */
                 goto EXIT;
             }
             else
@@ -283,9 +284,16 @@ namespace Vita_FTPI_Core
 
         EXT_REP:
             if (transferOptions.useUSB)
-            {      
-                Directory.Delete(transferOptions.driveLetter + "/app/" + TitleID, true);
-                CopyAll(new DirectoryInfo(ExtractPath), new DirectoryInfo(transferOptions.driveLetter + "/app/" + TitleID));
+            {
+                if (CompareReplace)
+                {
+                    CopyDifferentFiles(new DirectoryInfo(ExtractPath), new DirectoryInfo(transferOptions.driveLetter + "/app/" + TitleID));
+                }
+                else
+                {
+                    Directory.Delete(transferOptions.driveLetter + "/app/" + TitleID, true);
+                    CopyAll(new DirectoryInfo(ExtractPath), new DirectoryInfo(transferOptions.driveLetter + "/app/" + TitleID));
+                }
                 ftpSession.RemoveFile(configDir + "/COPYING");
                 Thread.Sleep(100);
             }
@@ -294,8 +302,9 @@ namespace Vita_FTPI_Core
                 ftpSession.RemoveFiles("ux0:app/" + TitleID);
                 ftpUploadDirectory(ExtractPath, "ux0:app/" + TitleID);
             }
-            Thread.Sleep(100);
-            launchApp(TitleID);
+            Thread.Sleep(200);
+            for(int i = 0; i < 5; i++)
+                launchApp(TitleID);
             goto EXIT;
 
 
@@ -306,6 +315,79 @@ namespace Vita_FTPI_Core
             Console.WriteLine($"Exiting in {0} seconds", exitTime);
             Thread.Sleep(exitTime * 1000);
             Environment.Exit(0);
+        }
+
+        static void CopyDifferentFiles(DirectoryInfo directory1, DirectoryInfo directory2)
+        {
+            foreach(DirectoryInfo directoryInfo in directory1.GetDirectories())
+            {
+                if (!Directory.Exists(Path.Combine(directory2.FullName, directoryInfo.Name)))
+                    CopyAll(directoryInfo, new DirectoryInfo(Path.Combine(directory2.FullName, directoryInfo.Name)));
+
+                else
+                {
+                    CopyDifferentFiles(directoryInfo, new DirectoryInfo(Path.Combine(directory2.FullName, directoryInfo.Name)));
+                }
+            }
+            foreach(FileInfo file in directory1.GetFiles())
+            {
+                if(!File.Exists(Path.Combine(directory2.FullName, file.Name)))
+                {
+                    Console.WriteLine("Copying File " + file.Name);
+                    file.CopyTo(Path.Combine(directory2.FullName, file.Name));
+                }
+                else
+                {
+                    if (file.Length.Equals(new FileInfo(Path.Combine(directory2.FullName, file.Name)).Length))
+                    {
+                        if (!UnsafeCompare(GetHashSha256(file.FullName), GetHashSha256(Path.Combine(directory2.FullName, file.Name))))
+                        {
+                            Console.WriteLine("Copying file " + file.Name);
+                            file.CopyTo(Path.Combine(directory2.FullName, file.Name), true);
+                        }
+                        else
+                        {
+                            Console.WriteLine(file.Name + " is the same");
+                        }
+                    }
+                    else
+                    {
+                        file.CopyTo(Path.Combine(directory2.FullName, file.Name), true);
+                    }
+                }
+            }
+        }
+
+        // Copyright (c) 2008-2013 Hafthor Stefansson
+        // Distributed under the MIT/X11 software license
+        // Ref: http://www.opensource.org/licenses/mit-license.php.
+        static unsafe bool UnsafeCompare(byte[] a1, byte[] a2)
+        {
+            if (a1 == a2) return true;
+            if (a1 == null || a2 == null || a1.Length != a2.Length)
+                return false;
+            fixed (byte* p1 = a1, p2 = a2)
+            {
+                byte* x1 = p1, x2 = p2;
+                int l = a1.Length;
+                for (int i = 0; i < l / 8; i++, x1 += 8, x2 += 8)
+                    if (*((long*)x1) != *((long*)x2)) return false;
+                if ((l & 4) != 0) { if (*((int*)x1) != *((int*)x2)) return false; x1 += 4; x2 += 4; }
+                if ((l & 2) != 0) { if (*((short*)x1) != *((short*)x2)) return false; x1 += 2; x2 += 2; }
+                if ((l & 1) != 0) if (*((byte*)x1) != *((byte*)x2)) return false;
+                return true;
+            }
+        }
+
+        static byte[] GetHashSha256(string filename)
+        {
+            using (var bstream = new BufferedStream(File.OpenRead(filename), 100))
+            {
+                using (FileStream stream = File.OpenRead(filename))
+                {
+                    return Md5.ComputeHash(stream);
+                }
+            }
         }
 
         static string GetTitleID()
