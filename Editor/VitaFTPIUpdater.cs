@@ -34,7 +34,6 @@ public class VitaFTPIUpdater
         System.Diagnostics.ProcessStartInfo extStartInfo = new System.Diagnostics.ProcessStartInfo();
         extStartInfo.FileName = "\"" + new FileInfo(new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName()).DirectoryName + "\\Extractor\\Extractor.exe" + "\"";
         extStartInfo.Arguments = "\"" + (string)PersistentPath + "/tempfile.zip\"" + " \"" + (string)PersistentPath + "/Extracted\"";
-        Debug.Log(extStartInfo.Arguments);
         System.Diagnostics.Process process = new System.Diagnostics.Process();
         process.StartInfo = extStartInfo;
         process.Start();
@@ -45,7 +44,7 @@ public class VitaFTPIUpdater
         
         DirectoryInfo newUploader = new DirectoryInfo(PersistentPath + "/Extracted/Tools/Uploader");
         DirectoryInfo oldUploader = new DirectoryInfo(UploadBuild.GetUploadDir());
-
+        if (!Directory.Exists(oldUploader.FullName)) Directory.CreateDirectory(oldUploader.FullName);
         foreach (FileInfo file in newUploader.GetFiles())
         {
             Debug.Log("Copying : " + file.Name + " to :" + Path.Combine(oldUploader.FullName, file.Name));

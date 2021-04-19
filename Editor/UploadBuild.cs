@@ -89,6 +89,7 @@ public class UploadBuild
 		process = new Process();
 		process.EnableRaisingEvents = true;
 		process.OutputDataReceived += Process_OutputDataReceived;
+        process.Exited += OnDebugExit;
 		process.StartInfo = info;
 		process.Start();
 		process.BeginOutputReadLine();
@@ -97,7 +98,12 @@ public class UploadBuild
 		HasStarted = true;
 	}
 
-	public static void StopDebug()
+    private static void OnDebugExit(object sender, System.EventArgs e)
+    {
+		HasStarted = false;
+    }
+
+    public static void StopDebug()
 	{
 		HasStarted = false;
 		process.Kill();
@@ -295,10 +301,37 @@ public class UploadBuild
 		UnityEngine.Debug.Log("Done!");
 	}
 
-	[MenuItem("VitaFTPI/Run UnityTools")]
+	public static void PackVPK()
+    {
+		if (PreSetup() < 0)
+			return;
+
+		if (!File.Exists(LastBuildDirSavePath))
+			return;
+
+		if (!Directory.Exists(File.ReadAllText(LastBuildDirSavePath)))
+			UnityEngine.Debug.Log("No build directory found!");
+
+		if (File.Exists(data.UploaderFolder + "/" + GetProjectName() + ".vpk"))
+			File.Delete(data.UploaderFolder + "/" + GetProjectName() + ".vpk");
+
+		string args = "-i \"" + buildDir + "\" -o \"" + UploaderPath + "/" + GetProjectName() + "\"" + " -f -u -r -p";
+
+
+		ProcessStartInfo processStartInfo = new ProcessStartInfo();
+		processStartInfo.FileName = UploaderPath + "/UnityTools.exe";
+		processStartInfo.Arguments = args;
+		Process UnityTools = new Process();
+		UnityTools.StartInfo = processStartInfo;
+		UnityTools.Start();
+
+		UnityEngine.Debug.Log("Done!");
+	}
+
+	[MenuItem("VitaFTPI/Pack VPK")]
 	public static void BuildVPKMenu()
 	{
-		BuildVPK(false);
+		PackVPK();
 	}
 
 	static string boolToString(bool a)

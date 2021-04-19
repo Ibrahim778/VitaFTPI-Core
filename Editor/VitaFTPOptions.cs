@@ -48,211 +48,139 @@ public class VitaFTPOptions : EditorWindow
         EditorGUILayout.HelpBox("This is a PSVITA only tool, To use it set your build target to PSVITA!", MessageType.Warning);
         return;
 #endif
-
-
-        if(File.Exists(Application.dataPath + "/VitaFTPI/OLDLAYOUT"))
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.Space();
+        GUILayout.Label("Build Settings", EditorStyles.boldLabel);
+        EditorGUILayout.BeginHorizontal();
+        scrollView = EditorGUILayout.BeginScrollView(scrollView, false, false);
+        if (uploadData == null)
         {
-            Debug.Log("using old layout!");
-            EditorGUILayout.BeginVertical();
-            EditorGUILayout.BeginHorizontal();
-            scrollView = EditorGUILayout.BeginScrollView(scrollView, false, false);
-            if (uploadData == null)
-                GetUploadData();
-            uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end", uploadData.startOnBuildEnd);
-            if (uploadData.startOnBuildEnd)
-            {
-                uploadData.UseReplaceInstallOnEnd = EditorGUILayout.Toggle("Use replace install", uploadData.UseReplaceInstallOnEnd);
-            }
-            uploadData.KeepFolderAfterBuild = EditorGUILayout.Toggle("Keep build folder", uploadData.KeepFolderAfterBuild);
-            uploadData.ExtractOnPC = EditorGUILayout.Toggle("Extract VPK on PC", uploadData.ExtractOnPC);
-
-            GUILayout.Label("IP Adress: ", EditorStyles.largeLabel);
-            uploadData.IP = EditorGUILayout.TextField(uploadData.IP, EditorStyles.numberField).Split(' ')[0];
-            uploadData.UseUSB = EditorGUILayout.Toggle("Use USB", uploadData.UseUSB);
-            if (uploadData.UseUSB)
-            {
-                GUILayout.Label("Storage Type (PSVita)", EditorStyles.largeLabel);
-				uploadData.storageIndex = EditorGUILayout.Popup(uploadData.storageIndex, storageOptionsVisual);
-				uploadData.storageType = storageOptions[uploadData.storageIndex];
-
-            }
-
-            uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder", uploadData.CustomUploaderFolder);
-
-            if (uploadData.CustomUploaderFolder)
-            {
-                if (GUILayout.Button("Browse"))
-                {
-					uploadData.UploaderFolder = EditorUtility.OpenFolderPanel("Select Uploader Folder", uploadData.UploaderFolder, "");
-                }
-                EditorGUILayout.Space();
-            }
-
-			if(GUI.changed){
-                File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
-				AssetDatabase.ImportAsset("Assets/VitaFTPI/SaveConfig.txt");
-                Debug.Log("Configuration Saved!");
-			}
-            if (GUILayout.Button("Save Configuration")){
-                File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
-				AssetDatabase.ImportAsset("Assets/VitaFTPI/SaveConfig.txt");
-                Debug.Log("Configuration Saved!");
-			}
-
-            if (GUILayout.Button("Build VPK"))
-                UploadBuild.BuildVPKMenu();
-            if (GUILayout.Button("Complete Install"))
-                UploadBuild.UploadVPK();
-            if (GUILayout.Button("Replace Install"))
-                UploadBuild.ReplaceInstall();
-            if (!UploadBuild.HasStarted)
-            {
-                if (GUILayout.Button("Start Debug"))
-                    UploadBuild.StartDebug();
-            }
-            else if(UploadBuild.HasStarted)
-            {
-                if (GUILayout.Button("Stop Debug"))
-                    UploadBuild.StopDebug();
-            }
-            EditorGUILayout.EndScrollView();
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
+            GetUploadData();
         }
-        else
+
+        uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end", uploadData.startOnBuildEnd);
+        if (uploadData.startOnBuildEnd)
         {
-			// new style
-			
-            EditorGUILayout.BeginVertical();
-            EditorGUILayout.Space();
-            GUILayout.Label("Build Settings", EditorStyles.boldLabel);
-            EditorGUILayout.BeginHorizontal();
-            scrollView = EditorGUILayout.BeginScrollView(scrollView, false, false);
-            if (uploadData == null){
-                GetUploadData();
-			}
-			
-			uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end", uploadData.startOnBuildEnd);
-            if (uploadData.startOnBuildEnd)
-            {
-                uploadData.UseReplaceInstallOnEnd = EditorGUILayout.Toggle("Use replace install", uploadData.UseReplaceInstallOnEnd);
-            }
-			
-			GUILayout.Space(7);
-            uploadData.KeepFolderAfterBuild = EditorGUILayout.Toggle("Keep build folder", uploadData.KeepFolderAfterBuild);
-			GUILayout.Space(5);
-            uploadData.ExtractOnPC = EditorGUILayout.Toggle("Extract VPK on PC", uploadData.ExtractOnPC);
-			
-			EditorGUILayout.Space();
-			GuiLine(1);
-			EditorGUILayout.Space();
-			
-            GUILayout.Label("Connection Settings", EditorStyles.boldLabel);
-			
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("IP Adress");
-            GUILayout.FlexibleSpace();
-            uploadData.IP = EditorGUILayout.TextField(uploadData.IP, EditorStyles.numberField, width112).Split(' ')[0];
-            GUILayout.EndHorizontal();
-			
-			GUILayout.Space(4);
-            uploadData.UseUSB = EditorGUILayout.Toggle("Use USB", uploadData.UseUSB);
-            if (uploadData.UseUSB)
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Storage Type (PSVita)");
-				uploadData.storageIndex = EditorGUILayout.Popup(uploadData.storageIndex, storageOptionsVisual);
-				uploadData.storageType = storageOptions[uploadData.storageIndex];
-                GUILayout.EndHorizontal();
-            }
-			
-			GUILayout.Space(8);
-            GUILayout.BeginHorizontal();
-            uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder", uploadData.CustomUploaderFolder);
-
-            if (uploadData.CustomUploaderFolder)
-            {
-                if (GUILayout.Button("Browse", width112))
-                {
-					uploadData.UploaderFolder = EditorUtility.OpenFolderPanel("Select Uploader Folder", uploadData.UploaderFolder, "");
-                }
-                GUILayout.EndHorizontal();
-                EditorGUILayout.Space();
-            }
-            else GUILayout.EndHorizontal();
-
-			EditorGUILayout.Space();
-			
-			// Should save once you change a field.
-			if(GUI.changed)
-            {
-                File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
-				AssetDatabase.ImportAsset("Assets/VitaFTPI/SaveConfig.txt");
-                Debug.Log("Configuration Saved!");
-			}
-			
-			
-			EditorGUILayout.Space();
-			GuiLine(1);
-			EditorGUILayout.Space();
-
-
-			// Install options
-			
-            GUILayout.Label("Actions", EditorStyles.boldLabel);
-			GUILayout.Space(8);
-
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Build Game"))
-            {
-                GUILayout.EndHorizontal();
-                EditorGUILayout.EndScrollView();
-                EditorGUILayout.EndVertical();
-                UploadBuild.BuildGame();
-            }
-            if (GUILayout.Button("Complete Install"))
-                UploadBuild.UploadVPK();
-            if (GUILayout.Button("Replace Install"))
-                UploadBuild.ReplaceInstall();
-            if (!UploadBuild.HasStarted)
-            {
-                if (GUILayout.Button("Start Debug"))
-                    UploadBuild.StartDebug();
-            }
-            else if(UploadBuild.HasStarted)
-            {
-                if (GUILayout.Button("Stop Debug"))
-                    UploadBuild.StopDebug();
-            }
-            GUILayout.EndHorizontal();
-
-
-			EditorGUILayout.Space();
-			GuiLine(1);
-			EditorGUILayout.Space();
-
-            GUILayout.Label("Other", EditorStyles.boldLabel);
-
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Update"))
-                VitaFTPIUpdater.Update();
-            if (GUILayout.Button("Launch Game"))
-                UploadBuild.sendCommand("launch " + Regex.Match(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])").Value);
-
-            GUILayout.EndHorizontal();
-            EditorGUILayout.Space();
-
-            GuiLine(1);
-            EditorGUILayout.Space();
-
-            EditorGUILayout.Space();
-            GUILayout.Label("Made with <3 by Ibrahim");
-            GUILayout.Label("Layout by Bizzy and iDevOnAParkingLot");
-
-            EditorGUILayout.EndScrollView();
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
+            uploadData.UseReplaceInstallOnEnd = EditorGUILayout.Toggle("Use replace install", uploadData.UseReplaceInstallOnEnd);
         }
+
+        GUILayout.Space(7);
+        uploadData.KeepFolderAfterBuild = EditorGUILayout.Toggle("Keep build folder", uploadData.KeepFolderAfterBuild);
+        GUILayout.Space(5);
+        uploadData.ExtractOnPC = EditorGUILayout.Toggle("Extract VPK on PC", uploadData.ExtractOnPC);
+
+        EditorGUILayout.Space();
+        GuiLine(1);
+        EditorGUILayout.Space();
+
+        GUILayout.Label("Connection Settings", EditorStyles.boldLabel);
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("IP Adress");
+        GUILayout.FlexibleSpace();
+        uploadData.IP = EditorGUILayout.TextField(uploadData.IP, EditorStyles.numberField, width112).Split(' ')[0];
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(4);
+        uploadData.UseUSB = EditorGUILayout.Toggle("Use USB", uploadData.UseUSB);
+        if (uploadData.UseUSB)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Storage Type (PSVita)");
+            uploadData.storageIndex = EditorGUILayout.Popup(uploadData.storageIndex, storageOptionsVisual);
+            uploadData.storageType = storageOptions[uploadData.storageIndex];
+            GUILayout.EndHorizontal();
+        }
+
+        GUILayout.Space(8);
+        GUILayout.BeginHorizontal();
+        uploadData.CustomUploaderFolder = EditorGUILayout.Toggle("Custom Uploader Folder", uploadData.CustomUploaderFolder);
+
+        if (uploadData.CustomUploaderFolder)
+        {
+            if (GUILayout.Button("Browse", width112))
+            {
+                uploadData.UploaderFolder = EditorUtility.OpenFolderPanel("Select Uploader Folder", uploadData.UploaderFolder, "");
+            }
+            GUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+        }
+        else GUILayout.EndHorizontal();
+
+        EditorGUILayout.Space();
+
+        // Should save once you change a field.
+        if (GUI.changed)
+        {
+            File.WriteAllText(SavePath, JsonUtility.ToJson(uploadData));
+            AssetDatabase.ImportAsset("Assets/VitaFTPI/SaveConfig.txt");
+            Debug.Log("Configuration Saved!");
+        }
+
+
+        EditorGUILayout.Space();
+        GuiLine(1);
+        EditorGUILayout.Space();
+
+
+        // Install options
+
+        GUILayout.Label("Actions", EditorStyles.boldLabel);
+        GUILayout.Space(8);
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Build Game"))
+        {
+            GUILayout.EndHorizontal();
+            EditorGUILayout.EndScrollView();
+            EditorGUILayout.EndVertical();
+            UploadBuild.BuildGame();
+        }
+        if (GUILayout.Button("Complete Install"))
+            UploadBuild.UploadVPK();
+        if (GUILayout.Button("Replace Install"))
+            UploadBuild.ReplaceInstall();
+        if (GUILayout.Button("Pack VPK"))
+            UploadBuild.PackVPK();
+        GUILayout.EndHorizontal();
+
+
+        EditorGUILayout.Space();
+        GuiLine(1);
+        EditorGUILayout.Space();
+
+        GUILayout.Label("Other", EditorStyles.boldLabel);
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Update"))
+            VitaFTPIUpdater.Update();
+        if (GUILayout.Button("Launch Game"))
+            UploadBuild.sendCommand("launch " + Regex.Match(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])").Value);
+        if (!UploadBuild.HasStarted)
+        {
+            if (GUILayout.Button("Start Debug"))
+                UploadBuild.StartDebug();
+        }
+        else if (UploadBuild.HasStarted)
+        {
+            if (GUILayout.Button("Stop Debug"))
+                UploadBuild.StopDebug();
+        }
+
+        GUILayout.EndHorizontal();
+        EditorGUILayout.Space();
+
+        GuiLine(1);
+        EditorGUILayout.Space();
+
+        EditorGUILayout.Space();
+        GUILayout.Label("Made with <3 by Ibrahim");
+        GUILayout.Label("Layout by Bizzy and iDevOnAParkingLot");
+
+        EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
+
     }
 
     void GuiLine( int i_height = 1 )
