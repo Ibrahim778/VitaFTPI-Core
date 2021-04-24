@@ -15,9 +15,8 @@ Do note that you NEED vitashell to be installed to use usb mode. You should alre
 1. Copy the Editor folder to your assets folder.
 1. Copy the Uploader folder to any folder in your pc (try documents).
 1. Enter your vita's IP address and other settings in the menu item VitaFTPI/Options and if you haven't placed the uploader folder in your project directory enable custom uploader path and browse to your uploader folder.
-1. Make sure your vita has vitacompanion installed. It's a plugin by devnoname120.
-1. Install the vita app for this tool from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
-1. Done!! You  can now do a complete install once and then later on use the replace install method.
+1. Install the accompanying plugins for this app from [here](https://github.com/Ibrahim778/vitacompanion)
+1. Done!!
 
 ## Using the Debug feature (Unity): 
 This is not a full blown debug implimentation in unity. This will only allow you to read the Debug.Log's called in your app running in the vita inside unity like you do on PC.
