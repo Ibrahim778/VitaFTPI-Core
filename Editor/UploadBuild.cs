@@ -6,6 +6,9 @@ using System.Net.Sockets;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading;
+using UnityEditor.Build.Reporting;
+using System.Linq;
+using System.Collections.Generic;
 
 [ExecuteInEditMode]
 public class UploadBuild 
@@ -14,7 +17,8 @@ public class UploadBuild
 	public static string UploaderPath = null;
 	public static string LastBuildDirSavePath = Application.dataPath + "/VitaFTPI/LastBuildDir.txt";
 	public static string buildDir = null;
-	public static string Path = new System.Diagnostics.StackTrace(true).GetFrame(0).GetFileName();
+	public static string Path = new StackTrace(true).GetFrame(0).GetFileName();
+	public static string runFilePath = Application.dataPath + "/VitaFTPI/run";
 
 	public static string GetUploadDir()
     {
@@ -23,7 +27,7 @@ public class UploadBuild
 
 	public static void sendCommand(string cmd)
 	{
-		if (PreSetup() < 0)
+		if (loadData() < 0)
 			return;
 		using (TcpClient client = new TcpClient(data.IP, 1338))
 		{
@@ -52,8 +56,9 @@ public class UploadBuild
 	{
 		if (!target.Equals(BuildTarget.PSP2))
 			return;
+		if (File.Exists(runFilePath)) return;
 
-		File.WriteAllText(LastBuildDirSavePath,pathToBuiltProject);
+		File.WriteAllText(LastBuildDirSavePath, pathToBuiltProject);
 		if(data == null)
 			data = JsonUtility.FromJson<UploadWrapper.UploadData>(File.ReadAllText(VitaFTPOptions.SavePath));
 		if(!data.startOnBuildEnd)
@@ -61,12 +66,61 @@ public class UploadBuild
 
 		UnityEngine.Debug.Log("Autorunning");
 
-		if(PreSetup() < 0)
+		if(loadData() < 0)
 			return;
-		
+
 		BuildVPK(true);
-		if (!data.UseReplaceInstallOnEnd) UploadVPK();
-		else ReplaceInstall();
+		ReplaceInstall();
+	}
+
+	[PostProcessBuildAttribute(1)]
+	public static void CheckFileRun(BuildTarget target, string path)
+    {
+		if (!target.Equals(BuildTarget.PSP2))
+			return;
+        if (File.Exists(runFilePath))
+        {
+			File.Delete(runFilePath);
+			File.Delete(runFilePath + ".meta");
+			CustomPrepBuild(true, path);
+			sendCommand("usb disable -");
+			sendCommand("file ux0:data/build/build.self");
+        }
+	}
+
+	static string[] GetDriveLetters()
+	{
+		List<string> driveNames = new List<string>();
+		foreach (DriveInfo drive in DriveInfo.GetDrives()) driveNames.Add(drive.Name);
+		return driveNames.ToArray();
+	}
+
+	public static void TestBuild()
+    {
+		if (loadData() < 0)
+			return;
+
+		string[] initialDrives = GetDriveLetters();
+		sendCommand("usb enable " + data.storageType);
+		while (Enumerable.SequenceEqual(initialDrives, GetDriveLetters()))
+			Thread.Sleep(1);
+
+		List<string> CurrentDrives = new List<string>();
+
+		foreach (DriveInfo drive in DriveInfo.GetDrives()) CurrentDrives.Add(drive.Name);
+
+		foreach (string drive in initialDrives) CurrentDrives.Remove(drive);
+
+		string driveLetter = CurrentDrives[0].Remove(CurrentDrives[0].Length - 1);
+
+		int sceneCount = UnityEngine.SceneManagement.SceneManager.sceneCountInBuildSettings;
+		string[] scenes = new string[sceneCount];
+		for (int i = 0; i < sceneCount; i++)
+		{
+			scenes[i] = UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(i);
+		}
+        BuildPipeline.BuildPlayer(scenes, driveLetter + "/data/build", BuildTarget.PSP2, BuildOptions.None);
+		File.WriteAllText(runFilePath, "");
 	}
 
 	public static string GetProjectName()
@@ -81,7 +135,7 @@ public class UploadBuild
 
 	public static void StartDebug()
 	{
-		if (PreSetup() < 0) return;
+		if (loadData() < 0) return;
 		ProcessStartInfo info = new ProcessStartInfo();
 		info.FileName = UploaderPath + "/DebugPortReader.exe";
 		info.RedirectStandardOutput = true;
@@ -116,23 +170,40 @@ public class UploadBuild
 	}
 
 
+	static int loadData()
+	{
+		if (data == null && File.Exists(VitaFTPOptions.SavePath))
+			data = JsonUtility.FromJson<UploadWrapper.UploadData>(File.ReadAllText(VitaFTPOptions.SavePath));
+		else if (!File.Exists(VitaFTPOptions.SavePath))
+		{
+			UnityEngine.Debug.Log("Please configure options under VitaFTPI/Options");
+			File.WriteAllText(VitaFTPOptions.SavePath, JsonUtility.ToJson(new UploadBuild()));
+			return -1;
+		}
+
+		if (UploaderPath == null)
+		{
+			if (!data.CustomUploaderFolder) UploaderPath = Regex.Replace(Application.dataPath, "Assets", "Uploader");
+			else UploaderPath = data.UploaderFolder;
+		}
+		return 0;
+	}
 	static int PreSetup()
     {
-		if(buildDir == null)
-			buildDir = File.ReadAllText(LastBuildDirSavePath);
+		if (data == null && File.Exists(VitaFTPOptions.SavePath))
+			data = JsonUtility.FromJson<UploadWrapper.UploadData>(File.ReadAllText(VitaFTPOptions.SavePath));
+		else if (!File.Exists(VitaFTPOptions.SavePath))
+		{
+			UnityEngine.Debug.Log("Please configure options under VitaFTPI/Options");
+			File.WriteAllText(VitaFTPOptions.SavePath, JsonUtility.ToJson(new UploadBuild()));
+			return -1;
+		}
+		buildDir = File.ReadAllText(LastBuildDirSavePath);
 		if(!Directory.Exists(buildDir))
         {
 			UnityEngine.Debug.LogError("No build found!");
-			return -1;
+			return -2;
         }
-		if(data == null && File.Exists(VitaFTPOptions.SavePath))
-			data = JsonUtility.FromJson<UploadWrapper.UploadData>(File.ReadAllText(VitaFTPOptions.SavePath));
-		else if(!File.Exists(VitaFTPOptions.SavePath))
-		{
-			UnityEngine.Debug.Log("Please configure options under VitaFTPI/Options");
-			File.WriteAllText(VitaFTPOptions.SavePath,JsonUtility.ToJson(new UploadBuild()));
-			return -1;
-		}
 
 		if(UploaderPath == null)
         	if(!data.CustomUploaderFolder) UploaderPath = Regex.Replace(Application.dataPath,"Assets","Uploader");
@@ -188,7 +259,7 @@ public class UploadBuild
 			args += " --pre-extract \"" + buildDir + "\"";
 		}
 		args += " --replace-install";
-		args += " --compare";
+		args += " --partial";
 
 
 		ProcessStartInfo VitaFTPIStartInfo = new ProcessStartInfo();
@@ -200,6 +271,40 @@ public class UploadBuild
 		Process VitaFTPI = new Process();
 		VitaFTPI.StartInfo = VitaFTPIStartInfo;
 		VitaFTPI.Start();
+		UnityEngine.Debug.Log("Done!");
+	}
+
+	public static void CustomPrepBuild(bool wait, string path)
+    {
+		if (loadData() < 0)
+			return;
+
+		if (!Directory.Exists(path))
+			UnityEngine.Debug.Log("No build directory found!");
+
+		string args = "-i \"" + path + "\" -o \"" + UploaderPath + "\\" + GetProjectName() + "\"" + " -f -u -r";
+		if (!data.ExtractOnPC)
+			args += " -p";
+		if (!data.KeepFolderAfterBuild)
+			args += " -d";
+
+
+		ProcessStartInfo processStartInfo = new ProcessStartInfo();
+		processStartInfo.FileName = UploaderPath + "/UnityTools.exe";
+		processStartInfo.Arguments = args;
+		Process UnityTools = new Process();
+		UnityTools.StartInfo = processStartInfo;
+		UnityTools.Start();
+
+		if (!wait)
+			goto EXIT;
+
+		while (!UnityTools.HasExited)
+			Thread.Sleep(1);
+
+		goto EXIT;
+
+	EXIT:
 		UnityEngine.Debug.Log("Done!");
 	}
 
@@ -340,6 +445,7 @@ public class UploadBuild
 		return "false";
     }
 
+	
 	static void BuildVPK(bool wait = false)
 	{
 		if(PreSetup() < 0)

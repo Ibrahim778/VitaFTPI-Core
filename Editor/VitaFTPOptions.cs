@@ -59,10 +59,6 @@ public class VitaFTPOptions : EditorWindow
         }
 
         uploadData.startOnBuildEnd = EditorGUILayout.Toggle("Start on build end", uploadData.startOnBuildEnd);
-        if (uploadData.startOnBuildEnd)
-        {
-            uploadData.UseReplaceInstallOnEnd = EditorGUILayout.Toggle("Use replace install", uploadData.UseReplaceInstallOnEnd);
-        }
 
         GUILayout.Space(7);
         uploadData.KeepFolderAfterBuild = EditorGUILayout.Toggle("Keep build folder", uploadData.KeepFolderAfterBuild);
@@ -120,25 +116,43 @@ public class VitaFTPOptions : EditorWindow
 
         EditorGUILayout.Space();
         GuiLine(1);
+
+        EditorGUILayout.Space();
+        GUILayout.Label("Dev Options", EditorStyles.boldLabel);
+        GUILayout.Space(8);
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Test Build"))
+        {
+            UploadBuild.TestBuild();
+            return;
+        }
+        if (!UploadBuild.HasStarted)
+        {
+            if (GUILayout.Button("Start Debug"))
+                UploadBuild.StartDebug();
+        }
+        else if (UploadBuild.HasStarted)
+        {
+            if (GUILayout.Button("Stop Debug"))
+                UploadBuild.StopDebug();
+        }
+        GUILayout.EndHorizontal();
         EditorGUILayout.Space();
 
-
-        // Install options
-
-        GUILayout.Label("Actions", EditorStyles.boldLabel);
+        GuiLine(1);
+        EditorGUILayout.Space();
+        
+        GUILayout.Label("Install Actions", EditorStyles.boldLabel);
         GUILayout.Space(8);
 
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Build Game"))
         {
-            GUILayout.EndHorizontal();
-            EditorGUILayout.EndScrollView();
-            EditorGUILayout.EndVertical();
             UploadBuild.BuildGame();
+            return;
         }
-        if (GUILayout.Button("Complete Install"))
-            UploadBuild.UploadVPK();
-        if (GUILayout.Button("Replace Install"))
+        if (GUILayout.Button("Install"))
             UploadBuild.ReplaceInstall();
         if (GUILayout.Button("Pack VPK"))
             UploadBuild.PackVPK();
@@ -152,21 +166,12 @@ public class VitaFTPOptions : EditorWindow
         GUILayout.Label("Other", EditorStyles.boldLabel);
 
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Update"))
-            VitaFTPIUpdater.Update();
         if (GUILayout.Button("Launch Game"))
             UploadBuild.sendCommand("launch " + Regex.Match(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])").Value);
-        if (!UploadBuild.HasStarted)
-        {
-            if (GUILayout.Button("Start Debug"))
-                UploadBuild.StartDebug();
-        }
-        else if (UploadBuild.HasStarted)
-        {
-            if (GUILayout.Button("Stop Debug"))
-                UploadBuild.StopDebug();
-        }
-
+        if (GUILayout.Button("Reboot"))
+            UploadBuild.sendCommand("reboot");
+        if (GUILayout.Button("Close all apps"))
+            UploadBuild.sendCommand("destroy");
         GUILayout.EndHorizontal();
         EditorGUILayout.Space();
 

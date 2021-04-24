@@ -25,6 +25,5 @@ public class UploadWrapper
 
         public bool ExtractOnPC = true;
 
-        public bool UseReplaceInstallOnEnd = false;
     }
 }

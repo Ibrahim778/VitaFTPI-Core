@@ -18,10 +18,9 @@ public class VitaFTPIUpdater
         
         using (WebClient client = new WebClient())
         {
-            client.DownloadProgressChanged += Progress;
             client.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache);
             Debug.Log("Downloading scripts...");
-            File.WriteAllText(UploadBuild.Path, client.DownloadString(new Uri(UploadBuildRemotePath)));
+            File.WriteAllText(UploadBuild.Path, client.DownloadString(UploadBuildRemotePath));
             File.WriteAllText(VitaFTPOptions.Path, client.DownloadString(VitaFTPIOptionsRemotePath));
             File.WriteAllText(UploadWrapper.path, client.DownloadString(UploadDataRemotePath));
             

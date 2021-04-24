@@ -18,6 +18,13 @@ enum StorageType
     OFFICIAL
 }
 
+enum ReplaceInstallMethod
+{
+    Partial,
+    Compare,
+    Full
+}
+
 enum InstallMode
 {
     PROMOTE_EXTRACT_VITA,
@@ -46,7 +53,10 @@ namespace Vita_FTPI_Core
         static int exitTime = 1;
         static ProgressBar currentBar;
         static bool preExtracted = false;
-        static bool CompareReplace = false;
+        static int tries = 1;
+        static bool udcd = false;
+        static string udcdPath = "";
+        static ReplaceInstallMethod replaceInstallMethod = ReplaceInstallMethod.Full;
         static InstallMode installMode = InstallMode.PROMOTE_EXTRACT_VITA;
         static StorageType storageType;
         static FTPOptions ftpOptions;
@@ -58,11 +68,9 @@ namespace Vita_FTPI_Core
         static string ExtractPath = "Extracted";
         static private string pkgTempFolder = "/temp/pkg";
         static string SendPath = "ux0:/data/sent.vpk";
-        static string configDir = "ux0:/data/UnityLoader";
         static string TempFileName = "tempFile";
         static string TitleID = "NULL";
         static MD5 Md5 = MD5.Create();
-        static string[] configFiles = { "/EXTRACTED", "/CONFIG_READY", "/USB", "/sd2vita", "/OFFICIAL", "/RUNCOMPLETE", "/COPYING", "/INSTALL" };
 
 
         static void Main(string[] args)
@@ -76,9 +84,18 @@ namespace Vita_FTPI_Core
             //Setting all the arguments
             for (int x = 0; x < args.Length; x += 2)
             {
+                if (args[x] == "--udcd")
+                {
+                    udcd = true;
+                    udcdPath = args[x + 1];
+                }
                 if (args[x] == "--vpk")
                 {
                     VPKPath = args[x + 1];
+                }
+                if (args[x] == "--tries")
+                {
+                    tries = int.Parse(args[x + 1]);
                 }
                 if (args[x] == "--ip")
                 {
@@ -148,6 +165,7 @@ namespace Vita_FTPI_Core
                 {
                     Console.WriteLine("Setting install mode to replace install!");
                     installMode = InstallMode.EXTRACT_REPLACE;
+                    replaceInstallMethod = ReplaceInstallMethod.Full;
                     x--;
                 }
                 if (args[x] == "--extract")
@@ -169,7 +187,12 @@ namespace Vita_FTPI_Core
                 }
                 if(args[x] == "--compare")
                 {
-                    CompareReplace = true;
+                    replaceInstallMethod = ReplaceInstallMethod.Compare;
+                    x--;
+                }
+                if(args[x] == "--partial")
+                {
+                    replaceInstallMethod = ReplaceInstallMethod.Partial;
                     x--;
                 }
             }
@@ -206,42 +229,27 @@ namespace Vita_FTPI_Core
                 Console.WriteLine("Getting list of all drives...");
                 transferOptions.InitialDrives = GetDriveLetters();
             }
-            Console.WriteLine("Connecting to vita...");
-            ftpSession.FileTransferProgress += new FileTransferProgressEventHandler(ProgressChanged);
-            ftpSession.Open(sessionOptions);
-            Console.WriteLine("Connected!");
-            Console.WriteLine("Making temporary file...");
-            File.WriteAllText(TempFileName, "Just a temporary file!");
-            Console.WriteLine("Deleting old config files...");
-            foreach (string file in configFiles)
-                if (ftpSession.FileExists(configDir + file)) ftpSession.RemoveFile(configDir + file);
-            Console.WriteLine("Done!");
-            Console.WriteLine("Creating config...");
-            ftpCreateFile(configDir + "/CONFIG_READY");
-
-            //We tell unityLoader to start usb when it launches
-            if (transferOptions.useUSB) LoadUSB();
-
+            if(!transferOptions.useUSB)
+            {
+                Console.WriteLine("Connecting to vita...");
+                ftpSession.FileTransferProgress += new FileTransferProgressEventHandler(ProgressChanged);
+                ftpSession.Open(sessionOptions);
+                Console.WriteLine("Connected!");
+            }    
             if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA || installMode == InstallMode.EXTRACT_REPLACE)
                 if(!preExtracted) ExtractVPK();
 
             if (TitleID == "NULL") TitleID = GetTitleID();
 
-            if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA || installMode == InstallMode.PROMOTE_EXTRACT_VITA)
-                ftpCreateFile(configDir + "/INSTALL");
-
-            if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA)
-                ftpCreateFile(configDir + "/EXTRACTED");
-
-            if(transferOptions.useUSB)
+            if (transferOptions.useUSB)
             {
-                launchApp("UNITYLOAD");
-                if(transferOptions.driveLetter == "" || transferOptions.driveLetter == null)
+                LoadUSB();
+                if (transferOptions.driveLetter == "" || transferOptions.driveLetter == null)
                 {
                     while (Enumerable.SequenceEqual(transferOptions.InitialDrives, GetDriveLetters()))
                         Thread.Sleep(1);
                     transferOptions.driveLetter = GetNewDriveLetter();
-                    if(transferOptions.driveLetter == "" || transferOptions.driveLetter == null)
+                    if (transferOptions.driveLetter == "" || transferOptions.driveLetter == null)
                     {
                         Console.WriteLine("Error new drive not found! Enter one manually! For example: E:");
                         transferOptions.driveLetter = Console.ReadLine();
@@ -254,47 +262,85 @@ namespace Vita_FTPI_Core
                 }
 
                 if (installMode == InstallMode.EXTRACT_REPLACE)
-                    goto EXT_REP;
+                {
+                    if (Directory.Exists(transferOptions.driveLetter + "/app/" + TitleID))
+                        goto EXT_REP;
+                    else
+                    {
+                        Console.WriteLine("Error app not previously installed changing to install mode!\n");
+                        installMode = InstallMode.EXTRACT_PC_PROMOTE_VITA;
+                    }
+                }
 
                 if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA)
+                {
                     CopyAll(new DirectoryInfo(ExtractPath), new DirectoryInfo(transferOptions.driveLetter + pkgTempFolder));
-                
-                
-                if(installMode == InstallMode.PROMOTE_EXTRACT_VITA)
+                    disableUSB();
+                    sendCommand("ext_vpk ux0:" + pkgTempFolder);
+                    launchApp(TitleID);
+                }
+
+                if (installMode == InstallMode.PROMOTE_EXTRACT_VITA)
+                {
                     File.Copy(VPKPath, transferOptions.driveLetter + "/data/sent.vpk", true);
-                
+                    disableUSB();
+                    sendCommand("vpk " + SendPath);
+                }
                 Thread.Sleep(100);
-                ftpSession.RemoveFile(configDir + "/COPYING");
                 goto EXIT;
             }
             else
             {
                 if (installMode == InstallMode.EXTRACT_REPLACE)
-                    goto EXT_REP;
+                {
+                    if(ftpSession.FileExists("ux0:/app/" + TitleID))
+                        goto EXT_REP;
+                    else
+                    {
+                        Console.WriteLine("Error app not previously installed changing to install mode!\n");
+                        installMode = InstallMode.EXTRACT_PC_PROMOTE_VITA;
+                    }
+                }
 
                 if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA)
+                {
                     ftpUploadDirectory(ExtractPath, "ux0:" + pkgTempFolder);
-                
+                    sendCommand("ext_vpk ux0:" + pkgTempFolder);
+                    launchApp(TitleID);
+                }
                 if(installMode == InstallMode.PROMOTE_EXTRACT_VITA)
+                {
                     ftpUploadFile(VPKPath, SendPath);
-
-                launchApp("UNITYLOAD");
-                goto EXIT;
+                    sendCommand("vpk " + SendPath);
+                }
             }
 
         EXT_REP:
             if (transferOptions.useUSB)
             {
-                if (CompareReplace)
+                if (replaceInstallMethod.Equals(ReplaceInstallMethod.Partial))
+                {
+                    if(Directory.Exists(ExtractPath + "/Media"))
+                    {
+                        Directory.Delete(transferOptions.driveLetter + "/app/" + TitleID + "/Media", true);
+                        CopyAll(new DirectoryInfo(ExtractPath + "/Media"), new DirectoryInfo(transferOptions.driveLetter + "/app/" + TitleID + "/Media"));
+                    }
+                    else
+                    {
+                        Console.WriteLine("This is not a unity app the partial install method is only suppourted with unity apps switching to compare");
+                        replaceInstallMethod = ReplaceInstallMethod.Compare;
+                    }
+                }
+                if (replaceInstallMethod.Equals(ReplaceInstallMethod.Compare))
                 {
                     CopyDifferentFiles(new DirectoryInfo(ExtractPath), new DirectoryInfo(transferOptions.driveLetter + "/app/" + TitleID));
                 }
-                else
+                if (replaceInstallMethod.Equals(ReplaceInstallMethod.Full))
                 {
                     Directory.Delete(transferOptions.driveLetter + "/app/" + TitleID, true);
                     CopyAll(new DirectoryInfo(ExtractPath), new DirectoryInfo(transferOptions.driveLetter + "/app/" + TitleID));
                 }
-                ftpSession.RemoveFile(configDir + "/COPYING");
+                disableUSB();
                 Thread.Sleep(100);
             }
             else
@@ -303,18 +349,26 @@ namespace Vita_FTPI_Core
                 ftpUploadDirectory(ExtractPath, "ux0:app/" + TitleID);
             }
             Thread.Sleep(200);
-            for(int i = 0; i < 5; i++)
+            for(int i = 0; i < tries; i++)
                 launchApp(TitleID);
             goto EXIT;
 
 
         EXIT:
-            Console.WriteLine("Closing connection...");
-            ftpSession.Close();
-            File.Delete(TempFileName);
+            if (!transferOptions.useUSB)
+            {
+                Console.WriteLine("Closing connection...");
+                ftpSession.Close();
+            }
             Console.WriteLine($"Exiting in {0} seconds", exitTime);
             Thread.Sleep(exitTime * 1000);
             Environment.Exit(0);
+        }
+
+        static void disableUSB()
+        {
+            sendCommand("usb disable -");
+            if (udcd) sendCommand("skprx " + udcdPath);
         }
 
         static void CopyDifferentFiles(DirectoryInfo directory1, DirectoryInfo directory2)
@@ -408,17 +462,7 @@ namespace Vita_FTPI_Core
         static void LoadUSB()
         {
             Console.WriteLine("Loading USB");
-            if(!ftpSession.Opened)
-            {
-                Console.WriteLine("No FTP session opened, please open one first!");
-                return;
-            }
-            if (storageType == StorageType.sd2vita)
-                ftpCreateFile(configDir + "/sd2vita");
-            if (storageType == StorageType.OFFICIAL)
-                ftpCreateFile(configDir + "/OFFICIAL");
-            ftpCreateFile(configDir + "/USB");
-            ftpCreateFile(configDir + "/COPYING");
+            sendCommand("usb enable " + storageType.ToString());
         }
 
         static void ftpCreateFile(string remotePath)
@@ -522,6 +566,30 @@ namespace Vita_FTPI_Core
                     using (StreamWriter sw = new StreamWriter(ns))
                     {
                         sw.Write("launch " + titleID + "\n");
+                        sw.Flush();
+                        using (StreamReader sr = new StreamReader(ns))
+                        {
+                            Console.Write(sr.ReadToEnd());
+                            sr.Close();
+                        }
+                        sw.Close();
+                    }
+                    ns.Close();
+                }
+                client.Close();
+            }
+        }
+
+        static void sendCommand(string cmd)
+        {
+            Console.WriteLine("Sending " + cmd + " to vita...");
+            using (TcpClient client = new TcpClient(ftpOptions.IP.ToString(), ftpOptions.CMD_PORT))
+            {
+                using (NetworkStream ns = client.GetStream())
+                {
+                    using (StreamWriter sw = new StreamWriter(ns))
+                    {
+                        sw.Write(cmd + "\n");
                         sw.Flush();
                         using (StreamReader sr = new StreamReader(ns))
                         {
