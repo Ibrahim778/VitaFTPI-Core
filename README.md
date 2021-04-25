@@ -51,6 +51,6 @@ Updating is simple *replace* the Uploader, Editor and Plugins inside the Plugins
 Ans: Yes! Select use udcd_uvc in unity and enter the path.
 
 # Notes:
-1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Versions 2 and above of the app require the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
+1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Versions 2 and above of the app require the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases) V4 or above need the accompanying plugin(s) to be installed from [here](https://github.com/Ibrahim778/vitacompanion).
 
 1. A previous version of this app VitaFTPI worked only for some people so I have migrated it to .NET Core here.
