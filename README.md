@@ -28,7 +28,7 @@ _**Nothing to see here**_
 1. @The-Princess-of-Sleeping for the original NetDbLogPc and PrincessLog.
 1. Teakhanirons for the USB suppourt from EmergencyMount I stole the code for it from there.
 1. Sillica for UnityTools
-1. Icon for UnityLoader was very kindly provided by @noradninja on discord.
+1. Icon for UnityLoader was very kindly provided by @noradninja on discord (sadly no longer needed).
 1. TheOfficialFlow for making our vita's hackable on newer firmwares
 1. Team Molecule for Henkaku
 1. @CTPEJIOK22 for giving me the idea on discord
