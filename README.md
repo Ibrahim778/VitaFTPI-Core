@@ -27,7 +27,7 @@ Then to call the logs from within unity you need to copy the Plugins folder from
 Do remember this uses the official sdk for printing it to the logs. So do remember to remove the plugins and debug script when compiling the final release.
 
 # Known Issues:
-1. Udcd unloading works but once the usb transfer has completed reloading it hangs unity loader. you need to exit to the livearea and re-enter into the app for it to work.
+_**Nothing to see here**_
 
 # Credits: 
 1. Jordi at jllopisol@gmail.com for making the original program
@@ -56,7 +56,7 @@ Updating is simple *replace* the Uploader, Editor and Plugins inside the Plugins
 # FAQ:
 **1. Can I use USB mode with udcv-uvc plugins?**
 
-Ans: Yes! Install the vpk called UnityLoader_udcd, this will automatically unload and load udcd_uvc before and after the transfer. Do be warned this has bugs and I don't recommend you use it on a daily basis. *IMPORTANT* For this to work the plugin needs to be in ur0:tai or ux0:tai and it needs to be named udcd_uvc.skprx so if you use any of the oled or lcd_off plugins just rename them to udcd_uvc.skprx and make sure to change it in your config.txt as well.
+Ans: Yes! Select use udcd_uvc in unity and enter the path.
 
 # Notes:
 1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Versions 2 and above of the app require the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases).
