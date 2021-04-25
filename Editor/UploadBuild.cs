@@ -6,7 +6,6 @@ using System.Net.Sockets;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading;
-using UnityEditor.Build.Reporting;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -56,7 +55,13 @@ public class UploadBuild
 	{
 		if (!target.Equals(BuildTarget.PSP2))
 			return;
-		if (File.Exists(runFilePath)) return;
+		if (pathToBuiltProject.Contains("/data/VitaUnity/build"))
+        {
+			CustomPrepBuild(true, pathToBuiltProject);
+			sendCommand("usb disable -");
+			sendCommand("file ux0:data/VitaUnity/build/build.self");
+			return;
+		}
 
 		File.WriteAllText(LastBuildDirSavePath, pathToBuiltProject);
 		if(data == null)
@@ -73,20 +78,6 @@ public class UploadBuild
 		ReplaceInstall();
 	}
 
-	[PostProcessBuildAttribute(1)]
-	public static void CheckFileRun(BuildTarget target, string path)
-    {
-		if (!target.Equals(BuildTarget.PSP2))
-			return;
-        if (File.Exists(runFilePath))
-        {
-			File.Delete(runFilePath);
-			File.Delete(runFilePath + ".meta");
-			CustomPrepBuild(true, path);
-			sendCommand("usb disable -");
-			sendCommand("file ux0:data/build/build.self");
-        }
-	}
 
 	static string[] GetDriveLetters()
 	{
@@ -119,8 +110,7 @@ public class UploadBuild
 		{
 			scenes[i] = UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(i);
 		}
-        BuildPipeline.BuildPlayer(scenes, driveLetter + "/data/build", BuildTarget.PSP2, BuildOptions.None);
-		File.WriteAllText(runFilePath, "");
+        BuildPipeline.BuildPlayer(scenes, driveLetter + "/data/VitaUnity/build", BuildTarget.PSP2, BuildOptions.None);
 	}
 
 	public static string GetProjectName()
@@ -260,6 +250,8 @@ public class UploadBuild
 		}
 		args += " --replace-install";
 		args += " --partial";
+		if (data.useUDCD)
+			args += " --udcd \"" + data.udcdPath + "\"";
 
 
 		ProcessStartInfo VitaFTPIStartInfo = new ProcessStartInfo();
@@ -393,6 +385,9 @@ public class UploadBuild
 		}
 		else args += " --complete-vita-install";
 
+		if (data.useUDCD)
+			args += " --udcd \"" + data.udcdPath + "\"";
+
 		ProcessStartInfo VitaFTPIStartInfo = new ProcessStartInfo();
 		VitaFTPIStartInfo.Arguments = args;
 		if(File.Exists(UploaderPath + "/Vita-FTPI-Core.exe"))
@@ -446,7 +441,7 @@ public class UploadBuild
     }
 
 	
-	static void BuildVPK(bool wait = false)
+	public static void BuildVPK(bool wait = false)
 	{
 		if(PreSetup() < 0)
 			return;

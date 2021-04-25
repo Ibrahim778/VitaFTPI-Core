@@ -86,6 +86,14 @@ public class VitaFTPOptions : EditorWindow
             uploadData.storageIndex = EditorGUILayout.Popup(uploadData.storageIndex, storageOptionsVisual);
             uploadData.storageType = storageOptions[uploadData.storageIndex];
             GUILayout.EndHorizontal();
+            uploadData.useUDCD = EditorGUILayout.Toggle("Use udcd_uvc", uploadData.useUDCD);
+            if(uploadData.useUDCD)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Plugin path: ");
+                uploadData.udcdPath = EditorGUILayout.TextField(uploadData.udcdPath, EditorStyles.textField, GUILayout.Width(150)).Split(' ')[0];
+                GUILayout.EndHorizontal();
+            }
         }
 
         GUILayout.Space(8);
@@ -127,6 +135,10 @@ public class VitaFTPOptions : EditorWindow
             UploadBuild.TestBuild();
             return;
         }
+        if (GUILayout.Button("Relaunch Previous Test"))
+        {
+            UploadBuild.sendCommand("file ux0:data/VitaUnity/build/build.self");
+        }
         if (!UploadBuild.HasStarted)
         {
             if (GUILayout.Button("Start Debug"))
@@ -153,7 +165,11 @@ public class VitaFTPOptions : EditorWindow
             return;
         }
         if (GUILayout.Button("Install"))
-            UploadBuild.ReplaceInstall();
+        {
+            UploadBuild.BuildVPK(true);
+            if (uploadData.ExtractOnPC) UploadBuild.ReplaceInstall();
+            else UploadBuild.UploadVPK();
+        }
         if (GUILayout.Button("Pack VPK"))
             UploadBuild.PackVPK();
         GUILayout.EndHorizontal();
@@ -164,7 +180,7 @@ public class VitaFTPOptions : EditorWindow
         EditorGUILayout.Space();
 
         GUILayout.Label("Other", EditorStyles.boldLabel);
-
+        EditorGUILayout.Space();
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Launch Game"))
             UploadBuild.sendCommand("launch " + Regex.Match(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])").Value);
@@ -188,7 +204,7 @@ public class VitaFTPOptions : EditorWindow
 
     }
 
-    void GuiLine( int i_height = 1 )
+    void GuiLine(int i_height = 1)
     {
        Rect rect = EditorGUILayout.GetControlRect(false, i_height );
        rect.height = i_height;

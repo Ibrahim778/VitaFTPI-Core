@@ -25,5 +25,8 @@ public class UploadWrapper
 
         public bool ExtractOnPC = true;
 
+        public bool useUDCD = false;
+
+        public string udcdPath = "ux0:tai/udcd_uvc.skprx";
     }
 }

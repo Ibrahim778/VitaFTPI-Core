@@ -137,7 +137,7 @@ namespace Vita_FTPI_Core
                 }
                 if (args[x] == "--upload-dir")
                 {
-                    if(Directory.Exists(args[x + 1]))
+                    if (Directory.Exists(args[x + 1]))
                     {
                         UploadFolder = args[x + 1];
                     }
@@ -152,8 +152,8 @@ namespace Vita_FTPI_Core
                 if (args[x] == "--titleid")
                 {
                     string givenID = args[x + 1];
-                    MatchCollection mc =  Regex.Matches(givenID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])");
-                    if(mc.Count == 0)
+                    MatchCollection mc = Regex.Matches(givenID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])");
+                    if (mc.Count == 0)
                     {
                         Console.WriteLine("Error invalid TitleID passed!");
                         Thread.Sleep(5000);
@@ -185,12 +185,12 @@ namespace Vita_FTPI_Core
                     preExtracted = true;
                     ExtractPath = args[x + 1];
                 }
-                if(args[x] == "--compare")
+                if (args[x] == "--compare")
                 {
                     replaceInstallMethod = ReplaceInstallMethod.Compare;
                     x--;
                 }
-                if(args[x] == "--partial")
+                if (args[x] == "--partial")
                 {
                     replaceInstallMethod = ReplaceInstallMethod.Partial;
                     x--;
@@ -223,21 +223,21 @@ namespace Vita_FTPI_Core
                 ftpOptions.CMD_PORT = 1338;
 
             closeAllApps();
-            ConfigureOptions();
-            if(transferOptions.useUSB && (transferOptions.driveLetter == "" || transferOptions.driveLetter == null))
+            if (transferOptions.useUSB && (transferOptions.driveLetter == "" || transferOptions.driveLetter == null))
             {
                 Console.WriteLine("Getting list of all drives...");
                 transferOptions.InitialDrives = GetDriveLetters();
             }
-            if(!transferOptions.useUSB)
+            if (!transferOptions.useUSB)
             {
+                ConfigureOptions();
                 Console.WriteLine("Connecting to vita...");
                 ftpSession.FileTransferProgress += new FileTransferProgressEventHandler(ProgressChanged);
                 ftpSession.Open(sessionOptions);
                 Console.WriteLine("Connected!");
-            }    
+            }
             if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA || installMode == InstallMode.EXTRACT_REPLACE)
-                if(!preExtracted) ExtractVPK();
+                if (!preExtracted) ExtractVPK();
 
             if (TitleID == "NULL") TitleID = GetTitleID();
 
@@ -285,6 +285,7 @@ namespace Vita_FTPI_Core
                     File.Copy(VPKPath, transferOptions.driveLetter + "/data/sent.vpk", true);
                     disableUSB();
                     sendCommand("vpk " + SendPath);
+                    launchApp(TitleID);
                 }
                 Thread.Sleep(100);
                 goto EXIT;
@@ -293,7 +294,7 @@ namespace Vita_FTPI_Core
             {
                 if (installMode == InstallMode.EXTRACT_REPLACE)
                 {
-                    if(ftpSession.FileExists("ux0:/app/" + TitleID))
+                    if (ftpSession.FileExists("ux0:/app/" + TitleID))
                         goto EXT_REP;
                     else
                     {
@@ -308,7 +309,7 @@ namespace Vita_FTPI_Core
                     sendCommand("ext_vpk ux0:" + pkgTempFolder);
                     launchApp(TitleID);
                 }
-                if(installMode == InstallMode.PROMOTE_EXTRACT_VITA)
+                if (installMode == InstallMode.PROMOTE_EXTRACT_VITA)
                 {
                     ftpUploadFile(VPKPath, SendPath);
                     sendCommand("vpk " + SendPath);
@@ -320,7 +321,7 @@ namespace Vita_FTPI_Core
             {
                 if (replaceInstallMethod.Equals(ReplaceInstallMethod.Partial))
                 {
-                    if(Directory.Exists(ExtractPath + "/Media"))
+                    if (Directory.Exists(ExtractPath + "/Media"))
                     {
                         Directory.Delete(transferOptions.driveLetter + "/app/" + TitleID + "/Media", true);
                         CopyAll(new DirectoryInfo(ExtractPath + "/Media"), new DirectoryInfo(transferOptions.driveLetter + "/app/" + TitleID + "/Media"));
@@ -349,7 +350,7 @@ namespace Vita_FTPI_Core
                 ftpUploadDirectory(ExtractPath, "ux0:app/" + TitleID);
             }
             Thread.Sleep(200);
-            for(int i = 0; i < tries; i++)
+            for (int i = 0; i < tries; i++)
                 launchApp(TitleID);
             goto EXIT;
 
@@ -373,7 +374,7 @@ namespace Vita_FTPI_Core
 
         static void CopyDifferentFiles(DirectoryInfo directory1, DirectoryInfo directory2)
         {
-            foreach(DirectoryInfo directoryInfo in directory1.GetDirectories())
+            foreach (DirectoryInfo directoryInfo in directory1.GetDirectories())
             {
                 if (!Directory.Exists(Path.Combine(directory2.FullName, directoryInfo.Name)))
                     CopyAll(directoryInfo, new DirectoryInfo(Path.Combine(directory2.FullName, directoryInfo.Name)));
@@ -383,9 +384,9 @@ namespace Vita_FTPI_Core
                     CopyDifferentFiles(directoryInfo, new DirectoryInfo(Path.Combine(directory2.FullName, directoryInfo.Name)));
                 }
             }
-            foreach(FileInfo file in directory1.GetFiles())
+            foreach (FileInfo file in directory1.GetFiles())
             {
-                if(!File.Exists(Path.Combine(directory2.FullName, file.Name)))
+                if (!File.Exists(Path.Combine(directory2.FullName, file.Name)))
                 {
                     Console.WriteLine("Copying File " + file.Name);
                     file.CopyTo(Path.Combine(directory2.FullName, file.Name));
@@ -425,9 +426,20 @@ namespace Vita_FTPI_Core
 
         static string GetTitleID()
         {
-            string Hex = File.ReadAllText(ExtractPath + "/sce_sys/param.sfo");
-            Match titleid = Regex.Match(Hex, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])");
-            return titleid.Value;
+            if (installMode.Equals(InstallMode.EXTRACT_PC_PROMOTE_VITA) || installMode.Equals(InstallMode.EXTRACT_REPLACE))
+            {
+                string Hex = File.ReadAllText(ExtractPath + "/sce_sys/param.sfo");
+                Match titleid = Regex.Match(Hex, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])");
+                return titleid.Value;
+            }
+            else
+            {
+                ZipArchive vpk = ZipFile.OpenRead(VPKPath);
+                StreamReader sr = new StreamReader(vpk.GetEntry("sce_sys/param.sfo").Open());
+                Match titleid = Regex.Match(sr.ReadToEnd(), "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])");
+                sr.Close();
+                return titleid.Value;
+            }
         }
 
         static string[] GetDriveLetters()
