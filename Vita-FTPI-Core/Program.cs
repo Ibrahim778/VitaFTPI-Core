@@ -428,17 +428,25 @@ namespace Vita_FTPI_Core
         {
             if (installMode.Equals(InstallMode.EXTRACT_PC_PROMOTE_VITA) || installMode.Equals(InstallMode.EXTRACT_REPLACE))
             {
-                string Hex = File.ReadAllText(ExtractPath + "/sce_sys/param.sfo");
-                Match titleid = Regex.Match(Hex, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])");
-                return titleid.Value;
+                using(FileStream stream = File.OpenRead(ExtractPath + "/sce_sys/param.sfo"))
+                {
+                    stream.Seek(0x37C, SeekOrigin.Begin);
+                    byte[] result = new byte[15];
+                    stream.Read(result, 0, 9);
+                    string utfString = System.Text.Encoding.UTF8.GetString(result, 0, 9);
+                    return utfString;
+                }
             }
             else
             {
                 ZipArchive vpk = ZipFile.OpenRead(VPKPath);
-                StreamReader sr = new StreamReader(vpk.GetEntry("sce_sys/param.sfo").Open());
-                Match titleid = Regex.Match(sr.ReadToEnd(), "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])");
-                sr.Close();
-                return titleid.Value;
+                ZipArchiveEntry param = vpk.GetEntry("sce_sys/param.sfo");
+                Stream st = param.Open();
+                st.Seek(0x37C, SeekOrigin.Begin);
+                byte[] result = new byte[15];
+                st.Read(result, 0, 9);
+                string utfString = System.Text.Encoding.UTF8.GetString(result, 0, 9);
+                return utfString;
             }
         }
 
