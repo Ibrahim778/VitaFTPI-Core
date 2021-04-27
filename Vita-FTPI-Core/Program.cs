@@ -50,6 +50,7 @@ namespace Vita_FTPI_Core
 {
     class Program
     {
+        static string ext_param_path = "Extracted/extparam";
         static int exitTime = 1;
         static ProgressBar currentBar;
         static bool preExtracted = false;
@@ -70,7 +71,7 @@ namespace Vita_FTPI_Core
         static string SendPath = "ux0:/data/sent.vpk";
         static string TempFileName = "tempFile";
         static string TitleID = "NULL";
-        static MD5 Md5 = MD5.Create();
+        static SHA1 Sha1 = SHA1.Create();
 
 
         static void Main(string[] args)
@@ -151,15 +152,7 @@ namespace Vita_FTPI_Core
                 }
                 if (args[x] == "--titleid")
                 {
-                    string givenID = args[x + 1];
-                    MatchCollection mc = Regex.Matches(givenID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])");
-                    if (mc.Count == 0)
-                    {
-                        Console.WriteLine("Error invalid TitleID passed!");
-                        Thread.Sleep(5000);
-                        return;
-                    }
-                    TitleID = mc[0].ToString();
+                    TitleID = args[x + 1];
                 }
                 if (args[x] == "--replace-install")
                 {
@@ -237,9 +230,6 @@ namespace Vita_FTPI_Core
                 Console.WriteLine("Connected!");
             }
             if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA || installMode == InstallMode.EXTRACT_REPLACE)
-                if (!preExtracted) ExtractVPK();
-
-            if (TitleID == "NULL") TitleID = GetTitleID();
 
             if (transferOptions.useUSB)
             {
@@ -277,7 +267,8 @@ namespace Vita_FTPI_Core
                     CopyAll(new DirectoryInfo(ExtractPath), new DirectoryInfo(transferOptions.driveLetter + pkgTempFolder));
                     disableUSB();
                     sendCommand("ext_vpk ux0:" + pkgTempFolder);
-                    launchApp(TitleID);
+                    if (TitleID != "NULL")
+                        launchApp(TitleID);
                 }
 
                 if (installMode == InstallMode.PROMOTE_EXTRACT_VITA)
@@ -285,7 +276,8 @@ namespace Vita_FTPI_Core
                     File.Copy(VPKPath, transferOptions.driveLetter + "/data/sent.vpk", true);
                     disableUSB();
                     sendCommand("vpk " + SendPath);
-                    launchApp(TitleID);
+                    if (TitleID != "NULL")
+                        launchApp(TitleID);
                 }
                 Thread.Sleep(100);
                 goto EXIT;
@@ -307,7 +299,8 @@ namespace Vita_FTPI_Core
                 {
                     ftpUploadDirectory(ExtractPath, "ux0:" + pkgTempFolder);
                     sendCommand("ext_vpk ux0:" + pkgTempFolder);
-                    launchApp(TitleID);
+                    if (TitleID != "NULL")
+                        launchApp(TitleID);
                 }
                 if (installMode == InstallMode.PROMOTE_EXTRACT_VITA)
                 {
@@ -351,7 +344,8 @@ namespace Vita_FTPI_Core
             }
             Thread.Sleep(200);
             for (int i = 0; i < tries; i++)
-                launchApp(TitleID);
+                if(TitleID != "NULL")
+                    launchApp(TitleID);
             goto EXIT;
 
 
@@ -395,7 +389,7 @@ namespace Vita_FTPI_Core
                 {
                     if (file.Length.Equals(new FileInfo(Path.Combine(directory2.FullName, file.Name)).Length))
                     {
-                        if (!Enumerable.SequenceEqual(GetHashSha256(file.FullName), GetHashSha256(Path.Combine(directory2.FullName, file.Name))))
+                        if (!Enumerable.SequenceEqual(GetHashMD5(file.FullName), GetHashMD5(Path.Combine(directory2.FullName, file.Name))))
                         {
                             Console.WriteLine("Copying file " + file.Name);
                             file.CopyTo(Path.Combine(directory2.FullName, file.Name), true);
@@ -413,41 +407,14 @@ namespace Vita_FTPI_Core
             }
         }
 
-        static byte[] GetHashSha256(string filename)
+        static byte[] GetHashMD5(string filename)
         {
             using (var bstream = new BufferedStream(File.OpenRead(filename), 100))
             {
                 using (FileStream stream = File.OpenRead(filename))
                 {
-                    return Md5.ComputeHash(stream);
+                    return Sha1.ComputeHash(stream);
                 }
-            }
-        }
-
-        static string GetTitleID()
-        {
-            if (installMode.Equals(InstallMode.EXTRACT_PC_PROMOTE_VITA) || installMode.Equals(InstallMode.EXTRACT_REPLACE))
-            {
-                using(FileStream stream = File.OpenRead(ExtractPath + "/sce_sys/param.sfo"))
-                {
-                    stream.Seek(0x37C, SeekOrigin.Begin);
-                    byte[] result = new byte[15];
-                    stream.Read(result, 0, 9);
-                    string utfString = System.Text.Encoding.UTF8.GetString(result, 0, 9);
-                    return utfString;
-                }
-            }
-            else
-            {
-                ZipArchive vpk = ZipFile.OpenRead(VPKPath);
-                ZipArchiveEntry param = vpk.GetEntry("sce_sys/param.sfo");
-                Stream st = param.Open();
-                st.Seek(0x37C, SeekOrigin.Begin);
-                byte[] result = new byte[15];
-                st.Read(result, 0, 9);
-                string utfString = System.Text.Encoding.UTF8.GetString(result, 0, 9);
-                st.Close();
-                return utfString;
             }
         }
 

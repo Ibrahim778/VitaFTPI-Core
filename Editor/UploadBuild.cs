@@ -79,21 +79,15 @@ public class UploadBuild
 	}
 
 
-	static string[] GetDriveLetters()
-	{
-		List<string> driveNames = new List<string>();
-		foreach (DriveInfo drive in DriveInfo.GetDrives()) driveNames.Add(drive.Name);
-		return driveNames.ToArray();
-	}
 
 	public static void TestBuild()
     {
 		if (loadData() < 0)
 			return;
 
-		string[] initialDrives = GetDriveLetters();
+		string[] initialDrives = Directory.GetLogicalDrives();
 		sendCommand("usb enable " + data.storageType);
-		while (Enumerable.SequenceEqual(initialDrives, GetDriveLetters()))
+		while (Enumerable.SequenceEqual(initialDrives, Directory.GetLogicalDrives()))
 			Thread.Sleep(1);
 
 		List<string> CurrentDrives = new List<string>();
@@ -242,7 +236,7 @@ public class UploadBuild
 
 		string args = "--vpk \"" + UploaderPath + "\\" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " +
 			boolToString(data.UseUSB)  + " --storage-type " + data.storageType + " --upload-dir \"" 
-			+ data.UploaderFolder + "\"";
+			+ data.UploaderFolder + "\" --titleid " + Regex.Match(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])").Value;
 		if (data.ExtractOnPC)
 		{
 			args += " --extract";
@@ -253,6 +247,7 @@ public class UploadBuild
 		if (data.useUDCD)
 			args += " --udcd \"" + data.udcdPath + "\"";
 
+		UnityEngine.Debug.Log(args);
 
 		ProcessStartInfo VitaFTPIStartInfo = new ProcessStartInfo();
 		VitaFTPIStartInfo.Arguments = args;
@@ -376,7 +371,7 @@ public class UploadBuild
 
 		CopyCustomFiles();
 
-		string args = "--vpk \"" + UploaderPath + "\\" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " + boolToString(data.UseUSB) + " --storage-type " + data.storageType;
+		string args = "--vpk \"" + UploaderPath + "\\" + GetProjectName() + ".vpk\" --ip " + data.IP + " --usb " + boolToString(data.UseUSB) + " --storage-type " + data.storageType + " --titleid " + Regex.Match(PlayerSettings.PSVita.contentID, "([A-Z][A-Z][A-Z][A-Z][0-9][0-9][0-9][0-9][0-9])").Value;
 
 		if (data.ExtractOnPC)
         {
