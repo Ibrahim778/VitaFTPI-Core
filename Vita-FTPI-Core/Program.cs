@@ -446,6 +446,7 @@ namespace Vita_FTPI_Core
                 byte[] result = new byte[15];
                 st.Read(result, 0, 9);
                 string utfString = System.Text.Encoding.UTF8.GetString(result, 0, 9);
+                st.Close();
                 return utfString;
             }
         }
