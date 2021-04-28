@@ -17,7 +17,6 @@ public class UploadBuild
 	public static string LastBuildDirSavePath = Application.dataPath + "/VitaFTPI/LastBuildDir.txt";
 	public static string buildDir = null;
 	public static string Path = new StackTrace(true).GetFrame(0).GetFileName();
-	public static string runFilePath = Application.dataPath + "/VitaFTPI/run";
 
 	public static string GetUploadDir()
     {
@@ -85,26 +84,24 @@ public class UploadBuild
 		if (loadData() < 0)
 			return;
 
+		sendCommand("usb disable -");
+		Thread.Sleep(100);
 		string[] initialDrives = Directory.GetLogicalDrives();
 		sendCommand("usb enable " + data.storageType);
+
 		while (Enumerable.SequenceEqual(initialDrives, Directory.GetLogicalDrives()))
 			Thread.Sleep(1);
 
-		List<string> CurrentDrives = new List<string>();
+		string driveLetter = "";
 
-		foreach (DriveInfo drive in DriveInfo.GetDrives()) CurrentDrives.Add(drive.Name);
-
-		foreach (string drive in initialDrives) CurrentDrives.Remove(drive);
-
-		string driveLetter = CurrentDrives[0].Remove(CurrentDrives[0].Length - 1);
-
+		foreach(string drive in Directory.GetLogicalDrives())
+			if(Directory.Exists(drive + "app") && Directory.Exists(drive + "appmeta") && Directory.Exists(drive + "data") && Directory.Exists(drive + "cache") && Directory.Exists(drive + "calendar"))
+            {
+				driveLetter = drive;
+				break;
+            }
 		int sceneCount = UnityEngine.SceneManagement.SceneManager.sceneCountInBuildSettings;
-		string[] scenes = new string[sceneCount];
-		for (int i = 0; i < sceneCount; i++)
-		{
-			scenes[i] = UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(i);
-		}
-        BuildPipeline.BuildPlayer(scenes, driveLetter + "/data/VitaUnity/build", BuildTarget.PSP2, BuildOptions.None);
+        BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, driveLetter + "data/VitaUnity/build", BuildTarget.PSP2, BuildOptions.None);
 	}
 
 	public static string GetProjectName()

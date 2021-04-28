@@ -50,7 +50,6 @@ namespace Vita_FTPI_Core
 {
     class Program
     {
-        static string ext_param_path = "Extracted/extparam";
         static int exitTime = 1;
         static ProgressBar currentBar;
         static bool preExtracted = false;
@@ -218,8 +217,10 @@ namespace Vita_FTPI_Core
             closeAllApps();
             if (transferOptions.useUSB && (transferOptions.driveLetter == "" || transferOptions.driveLetter == null))
             {
+                sendCommand("usb disable -");
+                Thread.Sleep(100);
                 Console.WriteLine("Getting list of all drives...");
-                transferOptions.InitialDrives = GetDriveLetters();
+                transferOptions.InitialDrives = Directory.GetLogicalDrives();
             }
             if (!transferOptions.useUSB)
             {
@@ -230,13 +231,14 @@ namespace Vita_FTPI_Core
                 Console.WriteLine("Connected!");
             }
             if (installMode == InstallMode.EXTRACT_PC_PROMOTE_VITA || installMode == InstallMode.EXTRACT_REPLACE)
+                if (!preExtracted) ExtractVPK();
 
             if (transferOptions.useUSB)
             {
                 LoadUSB();
                 if (transferOptions.driveLetter == "" || transferOptions.driveLetter == null)
                 {
-                    while (Enumerable.SequenceEqual(transferOptions.InitialDrives, GetDriveLetters()))
+                    while (Enumerable.SequenceEqual(transferOptions.InitialDrives, Directory.GetLogicalDrives()) && Directory.GetLogicalDrives().Length <= transferOptions.InitialDrives.Length)
                         Thread.Sleep(1);
                     transferOptions.driveLetter = GetNewDriveLetter();
                     if (transferOptions.driveLetter == "" || transferOptions.driveLetter == null)
@@ -316,7 +318,8 @@ namespace Vita_FTPI_Core
                 {
                     if (Directory.Exists(ExtractPath + "/Media"))
                     {
-                        Directory.Delete(transferOptions.driveLetter + "/app/" + TitleID + "/Media", true);
+                        if(Directory.Exists(transferOptions.driveLetter + "/app/" + TitleID + "/Media"))
+                            Directory.Delete(transferOptions.driveLetter + "/app/" + TitleID + "/Media", true);
                         CopyAll(new DirectoryInfo(ExtractPath + "/Media"), new DirectoryInfo(transferOptions.driveLetter + "/app/" + TitleID + "/Media"));
                     }
                     else
@@ -418,22 +421,18 @@ namespace Vita_FTPI_Core
             }
         }
 
-        static string[] GetDriveLetters()
-        {
-            List<string> driveNames = new List<string>();
-            foreach (DriveInfo drive in DriveInfo.GetDrives()) driveNames.Add(drive.Name);
-            return driveNames.ToArray();
-        }
-
         static string GetNewDriveLetter()
         {
-            List<string> CurrentDrives = new List<string>();
+            string driveLetter = "";
 
-            foreach (DriveInfo drive in DriveInfo.GetDrives()) CurrentDrives.Add(drive.Name);
+            foreach (string drive in Directory.GetLogicalDrives())
+                if (Directory.Exists(drive + "app") && Directory.Exists(drive + "appmeta") && Directory.Exists(drive + "data") && Directory.Exists(drive + "cache") && Directory.Exists(drive + "calendar"))
+                {
+                    driveLetter = drive;
+                    break;
+                }
 
-            foreach (string drive in transferOptions.InitialDrives) CurrentDrives.Remove(drive);
-
-            return CurrentDrives[0].Remove(CurrentDrives[0].Length - 1);
+            return driveLetter;
         }
 
         static void ExtractVPK()
