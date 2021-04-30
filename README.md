@@ -39,8 +39,8 @@ _**Nothing to see here**_
 1. Anyone else who helped out on the discord servers.
 
 # Updating
-
-Updating is simple *replace* the Uploader, Editor and Plugins inside the Plugins folder.
+## Unity
+Updating is simple dowload the new unity.zip file and run the installer again and use the new unitpackage.
 
 # Warnings:
 1. If uma0: is mounted usb mode will corrupt the data in it. uma0: is usally used for usb's in a pstv and for psvsd. So be careful! You have been warned.
