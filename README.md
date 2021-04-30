@@ -3,10 +3,10 @@ This is a tool (or a collection of them) that makes Unity Development (or develo
 
 # How to use
 ## Installing (Unity): 
-1. Download and extract the Tools.zip folder from the releases tab.
-1. Copy the Editor folder to your assets folder.
-1. Copy the Uploader folder to any folder in your pc (try documents).
-1. Enter your vita's IP address and other settings in the menu item VitaFTPI/Options and if you haven't placed the uploader folder in your project directory enable custom uploader path and browse to your uploader folder.
+1. Download and extract the Unity.zip folder from the releases tab.
+1. Run the Installer.bat file.
+1. Install the unitypackage.
+1. Configure settings via the menu item VitaFTPI>Options.
 1. Install the accompanying plugins for this app from [here](https://github.com/Ibrahim778/vitacompanion)
 1. Done!!
 
