@@ -7,7 +7,7 @@ This is a tool (or a collection of them) that makes Unity Development (or develo
 1. Run the Installer.bat file.
 1. Install the unitypackage.
 1. Configure settings via the menu item VitaFTPI>Options.
-1. Install the accompanying plugins for this app from [here](https://github.com/Ibrahim778/vitacompanion)
+1. Install the accompanying plugins for this app from [here](https://github.com/Ibrahim778/vitacompanion) OR you can use LoaderCompanionLoader to load the plugins manually if you do not want to install plugins from [here](https://github.com/Ibrahim778/LoaderCompanionLoader)
 1. Done!!
 
 ## Using the Debug feature (Unity): 
