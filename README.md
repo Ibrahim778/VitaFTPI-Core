@@ -46,7 +46,7 @@ Updating is simple dowload the new unity.zip file and run the installer again an
 1. If uma0: is mounted usb mode will corrupt the data in it. uma0: is usally used for usb's in a pstv and for psvsd. So be careful! You have been warned.
 
 # FAQ:
-**1. Can I use USB mode with udcv-uvc plugins?**
+**1. Can I use USB mode with udcd_uvc plugins?**
 
 Ans: Yes! Select use udcd_uvc in unity and enter the path.
 
