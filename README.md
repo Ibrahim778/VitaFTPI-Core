@@ -22,7 +22,7 @@ Do remember this uses the official sdk for printing it to the logs. So do rememb
 _**Nothing to see here**_
 
 # Credits: 
-1. Jordi at jllopisol@gmail.com for making the original program
+1. Jordi at jllopisol@gmail.com for making the inspiration for this program
 1. __*HUGE*__ thanks to Silica, Princess of Sleeping, Sarcastic Cat, たまご, TheFlow, DevNoName120, Rinnegatamante, s1ngyy and anyone else who helped for answering all of my questions.
 1. WinSCP
 1. @The-Princess-of-Sleeping for the original NetDbLogPc and PrincessLog.
