@@ -1,5 +1,6 @@
 # What is it?
-This is a tool (or a collection of them) that makes Unity Development (or development in general) on the vita much easier. It uses Silica's Unity tools and my remake of NetDbgLogPc by @Princess-of-Sleeping.
+This is a tool (or a collection of them) that makes Unity Development (or development in general) on the vita much easier.
+Other tools used (included) are: Silica's Unity tools and my remake of NetDbgLogPc by @Princess-of-Sleeping.
 
 # How to use
 ## Installing (Unity): 
