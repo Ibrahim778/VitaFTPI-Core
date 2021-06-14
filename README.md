@@ -47,10 +47,11 @@ Updating is simple dowload the new unity.zip file and run the installer again an
 1. If uma0: is mounted usb mode will corrupt the data in it. uma0: is usally used for usb's in a pstv and for psvsd. So be careful! You have been warned.
 
 # FAQ:
-**1. Can I use USB mode with udcd_uvc plugins?**
-
+**1. Can I use USB mode with udcd_uvc plugins?**  
 Ans: Yes! Select use udcd_uvc in unity and enter the path.
-
+  
+**2. Can I use this with VitaSDK/DolceSDK or the PSP2SDK?**  
+Ans: Yes but you'll have to do everything manually. The app works in simple ways but I have not yet written a full documentation regarding arguments and usage. This is because things change so much every few releases and I haven't got the time (school is annoying). I will do soon but if you really need it refer to the first for loop in the main function of the app for the arguments and the unity integration scripts for usage.  
 # Notes:
 1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Versions 2 and above of the app require the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases) V4 or above need the accompanying plugin(s) to be installed from [here](https://github.com/Ibrahim778/vitacompanion).
 
