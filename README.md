@@ -22,23 +22,6 @@ Do remember this uses the official sdk for printing it to the logs. So do rememb
 # Known Issues:
 _**Nothing to see here**_
 
-# Credits: 
-1. Jordi at jllopisol@gmail.com for making the inspiration for this program
-1. __*HUGE*__ thanks to Silica, Princess of Sleeping, Sarcastic Cat, たまご, TheFlow, DevNoName120, Rinnegatamante, s1ngyy and anyone else who helped for answering all of my questions.
-1. WinSCP
-1. @The-Princess-of-Sleeping for the original NetDbLogPc and PrincessLog.
-1. Teakhanirons for the USB suppourt from EmergencyMount I stole the code for it from there.
-1. Sillica for UnityTools
-1. Icon for UnityLoader was very kindly provided by @noradninja on discord (sadly no longer needed).
-1. TheOfficialFlow for making our vita's hackable on newer firmwares
-1. Team Molecule for Henkaku
-1. @CTPEJIOK22 for giving me the idea on discord
-1. @asdronin on discord for making the server
-1. @iDevOnAParkingLot on Discord for the new layout.
-1. Sony for the console.
-1. Everyone who contributed to VitaSDK. 
-1. Anyone else who helped out on the discord servers.
-
 # Updating
 ## Unity
 Updating is simple dowload the new unity.zip file and run the installer again and use the new unitpackage.
@@ -57,4 +40,21 @@ Ans: Yes but you'll have to do everything manually. The app works in simple ways
 # Notes:
 1. Version 1 of the app only worked with vitashell's ftp making it useless and is no longer suppourted. Versions 2 and above of the app require the accompanying app for the vita to be installed. You can download the VPK from [here](https://github.com/Ibrahim778/Unity-Loader/releases) V4 or above need the accompanying plugin(s) to be installed from [here](https://github.com/Ibrahim778/vitacompanion).
 
-1. A previous version of this app VitaFTPI worked only for some people so I have migrated it to .NET Core here.
+1. A previous version of this app VitaFTPI worked only for some people so I have migrated it to .NET Core here.  
+
+# Credits: 
+1. Jordi at jllopisol@gmail.com for making the inspiration for this program
+1. __*HUGE*__ thanks to Silica, Princess of Sleeping, Sarcastic Cat, たまご, TheFlow, DevNoName120, Rinnegatamante, s1ngyy and anyone else who helped for answering all of my questions.
+1. WinSCP
+1. @The-Princess-of-Sleeping for the original NetDbLogPc and PrincessLog.
+1. Teakhanirons for the USB suppourt from EmergencyMount I stole the code for it from there.
+1. Sillica for UnityTools
+1. Icon for UnityLoader was very kindly provided by @noradninja on discord (sadly no longer needed).
+1. TheOfficialFlow for making our vita's hackable on newer firmwares
+1. Team Molecule for Henkaku
+1. @CTPEJIOK22 for giving me the idea on discord
+1. @asdronin on discord for making the server
+1. @iDevOnAParkingLot on Discord for the new layout.
+1. Sony for the console.
+1. Everyone who contributed to VitaSDK. 
+1. Anyone else who helped out on the discord servers.
