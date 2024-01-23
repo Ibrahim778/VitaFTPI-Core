@@ -1,5 +1,8 @@
-# What is it?
-This is a tool (or a collection of them) that makes Unity Development (or development in general) on the vita much easier.  
+# Outdated
+This tool is no longer supported. It has been succeeded by [PSP2Tools](https://github.com/Ibrahim778/PSP2Tools/).
+
+# What was it?
+This was a tool (or a collection of them) that made Unity Development (or development in general) on the vita much easier.  
 Other tools used (included) are: Silica's Unity tools and my remake of NetDbgLogPc by @Princess-of-Sleeping.
 
 # Usage
